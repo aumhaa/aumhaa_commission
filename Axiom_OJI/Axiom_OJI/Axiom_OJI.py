@@ -1,5 +1,5 @@
 
-from __future__ import with_statement
+from __future__ import absolute_import, with_statement
 import Live
 import time
 import math
@@ -7,7 +7,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 from _Framework.ControlSurface import ControlSurface
-from _Framework.ControlElement import ControlElement
+from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
+from _Framework.ControlElement import ControlElement, ControlElementClient
 from _Framework.InputControlElement import *
 from _Framework.SliderElement import SliderElement
 from _Framework.ButtonElement import ButtonElement
@@ -22,7 +23,9 @@ from _Framework.ModeSelectorComponent import ModeSelectorComponent
 from _Framework.ClipSlotComponent import ClipSlotComponent
 from _Framework.SceneComponent import SceneComponent
 from _Framework.SessionComponent import SessionComponent
-from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
+
+
+#from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
 from AxiomPro.TransportViewModeSelector import TransportViewModeSelector
 from AxiomPro.SelectButtonModeSelector import SelectButtonModeSelector
 from AxiomPro.PageableDeviceComponent import PageableDeviceComponent
@@ -45,6 +48,60 @@ def debug_off(*a, **k):
 
 
 debug = log_flattened_arguments
+
+
+class M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
+	"""
+	Simplified API for interaction from M4L as a high priority layer
+	superposed on top of any functionality.
+	"""
+
+
+	def __init__(self, controls = None, component_guard = None, priority = 1, *a, **k):
+		super(M4LInterfaceComponent, self).__init__(self, *a, **k)
+		self._priority = priority
+		self._controls = dict(map(lambda x: (x.name, x), controls))
+		self._grabbed_controls = []
+		self._component_guard = component_guard
+
+
+	def disconnect(self):
+		for control in self._grabbed_controls[:]:
+			self.release_control(control)
+		super(M4LInterfaceComponent, self).disconnect()
+
+
+	def set_control_element(self, control, grabbed):
+		if hasattr(control, 'release_parameter'):
+			control.release_parameter()
+		control.reset()
+
+
+	def get_control_names(self):
+		return self._controls.keys()
+
+
+	def get_control(self, control_name):
+		return self._controls[control_name] if control_name in self._controls else None
+
+
+	def grab_control(self, control):
+		assert(control in self._controls.values())
+		with self._component_guard():
+			if control not in self._grabbed_controls:
+				control.resource.grab(self, priority=self._priority)
+				self._grabbed_controls.append(control)
+
+
+	def release_control(self, control):
+		assert(control in self._controls.values())
+		with self._component_guard():
+			if control in self._grabbed_controls:
+				self._grabbed_controls.remove(control)
+				control.resource.release(self)
+
+
+
 
 SYSEX_START = (240, 0, 1, 5, 32, 127)
 PAD_TRANSLATIONS = ((0, 2, 85, 15),
@@ -172,9 +229,9 @@ class Axiom_OJI(AxiomPro):
 			self._browser_displays = [self._display1, self._display2, self._display3, self._display4, self._display5, self._display6, self._display7]
 			self._drumpads = [ButtonElement(True, MIDI_NOTE_TYPE, 15, 81+index, name = 'Pad_'+str(index)) for index in range(8)]
 			self._setup_m4l_interface()
-			
+
 		self.log_message('Axiom_OJI script installed')
-	
+
 
 	"""
 	def __init__(self, *a, **k):
@@ -207,7 +264,7 @@ class Axiom_OJI(AxiomPro):
 		self.get_control = self._m4l_interface.get_control
 		self.grab_control = self._m4l_interface.grab_control
 		self.release_control = self._m4l_interface.release_control
-	
+
 
 	def handle_sysex(self, midi_bytes):
 		if midi_bytes[0:-2] == SYSEX_START + (32,):
@@ -240,11 +297,11 @@ class Axiom_OJI(AxiomPro):
 						display.update()
 					else:
 						display.set_block_messages(True)
-	
+
 
 	def _enable_browser(self):
 		self.enable_browser_mode(True)
-	
+
 
 	def enable_browser_mode(self, enable):
 		self._browser_mode_enabled = enable > 0
@@ -264,7 +321,7 @@ class Axiom_OJI(AxiomPro):
 				self._browser_displays[index].set_data_source(None)
 			for component in self.components:
 				component.set_enabled(True)
-	
+
 
 	def _enable_browser_mode(self, enable):
 		self._browser_mode_enabled = enable > 0
@@ -282,13 +339,13 @@ class Axiom_OJI(AxiomPro):
 		else:
 			for component in self.components:
 				component.set_enabled(True)
-	
+
 
 	def write_to_lcd(self, display, message):
 		if self._browser_mode_enabled and display in range(7):
 			self._data_sources[display].set_display_string(message)
-	
-	
+
+
 	def test_browser(self):
 		debug('test_browser')
 		browser = self.application.browser
@@ -304,8 +361,8 @@ class Axiom_OJI(AxiomPro):
 					if inneritem.name == 'Default.aupreset':
 						browser.load_item(inneritem)
 						break
-				
-	
+
+
 
 	def load_preset(self, target = None, folder = None, directory = 'defaultPresets'):
 		debug('load_preset()', target, folder, directory)
@@ -373,7 +430,7 @@ class Axiom_OJI(AxiomPro):
 									else:
 										debug(inneritem, 'item isnt loadable 4')
 										break
-	
+
 
 	def get_preset_names(self, folder = None, directory = 'defaultPresets'):
 		#debug('get_preset_names', folder, directory)
@@ -398,7 +455,7 @@ class Axiom_OJI(AxiomPro):
 					preset_names = [inneritem.name for inneritem in item_iterator]
 		#debug('names:', preset_names)
 		return preset_names
-	
+
 
 	def write_presets_to_lcd(self, folder = None, directory = 'defaultPresets'):
 		#debug('write_presets_to_lcd')
@@ -408,7 +465,7 @@ class Axiom_OJI(AxiomPro):
 			if i<7:
 				#debug('name:', i, name)
 				self.write_to_lcd(i, name[:20])
-	
+
 
 
 class AxiomPro_old(ControlSurface):
@@ -490,13 +547,13 @@ class AxiomPro_old(ControlSurface):
 			mixer_or_device.set_displays(encoder_display, parameter_display, device_display, tuple(page_displays))
 			for component in self.components:
 				component.set_enabled(False)
-	
+
 
 	def refresh_state(self):
 		ControlSurface.refresh_state(self)
 		self._waiting_for_first_response = True
 		self.schedule_message(10, self._send_midi, SYSEX_START + (32, 46, 247))
-	
+
 
 	def handle_sysex(self, midi_bytes):
 		if midi_bytes[0:-2] == SYSEX_START + (32,):
@@ -525,14 +582,14 @@ class AxiomPro_old(ControlSurface):
 						display.update()
 					else:
 						display.set_block_messages(True)
-	
+
 
 	def disconnect(self):
 		ControlSurface.disconnect(self)
 		self._send_midi(SYSEX_START + (32, 0, 247))
 		self._send_midi(SYSEX_START + (16, 247))
 		self._send_midi(SYSEX_START + (17, 3, 0, 4, 65, 98, 108, 101, 116, 111, 110, 32, 76, 105, 118, 101, 32, 67, 111, 110, 116, 114, 111, 108, 32, 0, 1, 4, 83, 117, 114, 102, 97, 99, 101, 32, 67, 108, 111, 115, 101, 100, 46, 247))
-	
+
 
 
 
