@@ -41,16 +41,16 @@ class MonoEncoderElement(EncoderElement):
 		else:
 			self._monobridge = MonoBridgeProxy()
 		self.set_report_values(True, False)
-	
+
 
 	def _report_value(self, value, is_input):
 		self._script.touched()
-	
+
 
 	def disconnect(self):
 		self.remove_parameter_listener(self._parameter)
 		super(MonoEncoderElement, self).disconnect()
-	
+
 
 	def connect_to(self, parameter):
 		if parameter == None:
@@ -71,12 +71,12 @@ class MonoEncoderElement(EncoderElement):
 				self.send_value(0, True)
 			super(MonoEncoderElement, self).connect_to(assignment)
 			self.add_parameter_listener(self._parameter_to_map_to)
-	
+
 
 	def set_enabled(self, enabled):
 		self._is_enabled = enabled
 		self._request_rebuild()
-	
+
 
 	def set_value(self, value):
 		if(self._parameter_to_map_to != None):
@@ -85,20 +85,20 @@ class MonoEncoderElement(EncoderElement):
 			return [value, str(self.mapped_parameter())]
 		else:
 			self.receive_value(int(value*127))
-	
+
 
 	def release_parameter(self):
 		if(self._parameter_to_map_to != None):
 			self.remove_parameter_listener(self._parameter_to_map_to)
 		super(MonoEncoderElement, self).release_parameter()
-	
+
 
 	def script_wants_forwarding(self):
 		if not self._is_enabled:
 			return False
 		else:
 			return super(MonoEncoderElement, self).script_wants_forwarding()
-	
+
 
 	def forward_parameter_value(self):
 		if(not (type(self._parameter) is type(None))):
@@ -114,7 +114,7 @@ class MonoEncoderElement(EncoderElement):
 				except:
 					self._parameter_last_value = ' '
 				self._monobridge.notification_to_bridge(self._parameter_lcd_name, self._parameter_last_value, self)
-	
+
 
 	def add_parameter_listener(self, parameter):
 		self._parameter = parameter
@@ -141,7 +141,7 @@ class MonoEncoderElement(EncoderElement):
 			self._monobridge.notification_to_bridge(self._parameter_lcd_name, self._parameter_last_value, self)
 			cb = lambda: self.forward_parameter_value()
 			parameter.add_value_listener(cb)
-	
+
 
 	def remove_parameter_listener(self, parameter):
 		self._parameter = None
@@ -153,7 +153,7 @@ class MonoEncoderElement(EncoderElement):
 			self._parameter_lcd_name = ' '
 			self._parameter_last_value = ' '
 			self._monobridge.notification_to_bridge(' ', ' ', self)
-	
+
 
 
 
@@ -180,43 +180,43 @@ class CodecEncoderElement(MonoEncoderElement):
 
 		#remove when relative mode has been fixed
 		self._last_received = -1
-	
+
 
 	def reset(self, force = False):
 		self.force_next_send()
 		self.send_value(0)
-	
+
 
 	def _reset_to_center(self):
 		self._last_received = 64
 		self.send_value(64, True)
-	
+
 
 	def change_ring_mode(self, mode):
 		#deprecated
 		self._ring_mode = mode
-	
+
 
 	def set_ring_value(self, val):
 		#deprecated
 		self._ring_value = val
-	
+
 
 	def ring_mode(self):
 		return self._ring_mode
-	
+
 
 	def set_custom(self, val):
 		self._ring_custom = self._calculate_custom(''.join([str(i) for i in val]))
-	
+
 
 	def set_green(self, val, *a):
 		self._ring_green = int(val>0)
-	
+
 
 	def set_mode(self, val, *a):
 		self._ring_mode = val
-	
+
 
 	def _calculate_custom(self, ring_leds):
 		self._raw_custom = str(ring_leds)
@@ -230,7 +230,7 @@ class CodecEncoderElement(MonoEncoderElement):
 			custom[index][0] = int(byte1, 2)
 			custom[index][1] = int(byte2, 2)
 		return custom
-	
+
 
 	def _get_ring(self):
 		if self._ring_mode < 4:
@@ -249,7 +249,7 @@ class CodecEncoderElement(MonoEncoderElement):
 			bytes = self._ring_custom[self._ring_value % len(self._ring_custom)]
 		bytes.append(self._ring_green * 32)
 		return bytes
-	
+
 
 	def set_value(self, value):
 		if(self._parameter_to_map_to != None):
@@ -258,27 +258,27 @@ class CodecEncoderElement(MonoEncoderElement):
 				self._parameter_to_map_to.value = newval
 		else:
 			self.receive_value(int(value))
-	
+
 
 	def connect_to(self, parameter):
 		super(CodecEncoderElement, self).connect_to(parameter)
 		if not parameter is None and not type(self._parameter) is type(None):
 			self._parameter_last_num_value = (self._parameter.value - self._parameter.min) / (self._parameter.max - self._parameter.min)
-	
+
 
 	def release_parameter(self):
 		if(self._parameter_to_map_to != None):
 			self.remove_parameter_listener(self._parameter_to_map_to)
 		self.send_value(0, True)
-		super(CodecEncoderElement, self).release_paraemter()
+		super(CodecEncoderElement, self).release_parameter()
 		self._parameter_last_num_value = 0
-	
+
 
 	def forward_parameter_value(self):
 		if(not (type(self._parameter) is type(None))):
 			self._parameter_last_num_value = (self._parameter.value - self._parameter.min) / (self._parameter.max - self._parameter.min)
 		super(CodecEncoderElement, self).forward_parameter_value()
-	
+
 
 	def remove_parameter_listener(self, parameter):
 		self._parameter = None
@@ -290,10 +290,8 @@ class CodecEncoderElement(MonoEncoderElement):
 			self._parameter_lcd_name = ' '
 			self._parameter_last_value = ' '
 			self._monobridge.notification_to_bridge(' ', ' ', self)
-	
+
 
 	def decode_parameter_value(self):
 		val = str(self.mapped_parameter)
 		return val
-	
-

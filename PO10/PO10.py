@@ -32,7 +32,7 @@ from _Framework.ModesComponent import EnablingModesComponent, DelayMode, Compoun
 from _Framework.Layer import Layer
 from _Framework.SubjectSlot import SubjectEvent, subject_slot, subject_slot_group
 from _Framework.Task import *
-from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
+#from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
 from _Framework.ComboElement import ComboElement, DoublePressElement, MultiElement, DoublePressContext
 from _Framework.Skin import Skin
 from _Framework.Profile import profile
@@ -57,7 +57,7 @@ from _Mono_Framework.LividUtilities import LividSettings
 from _Mono_Framework.MonoInstrumentComponent import *
 from _Mono_Framework.TranslationComponent import TranslationComponent
 
-from Livid_CNTRLR_2.Cntrlr import *
+#from Livid_CNTRLR_2.Cntrlr import *
 
 debug = initialize_debug()
 
@@ -126,7 +126,7 @@ def get_track(device):
 	if device:
 		track = dig(device)
 	return track
-	
+
 
 
 
@@ -135,7 +135,7 @@ class PO10EncoderElement(CodecEncoderElement):
 
 	def __init__(self, *a, **k):
 		super(PO10EncoderElement, self).__init__(*a, **k)
-	
+
 
 	def release_parameter(self):
 		if self._parameter_to_map_to != None:
@@ -143,14 +143,14 @@ class PO10EncoderElement(CodecEncoderElement):
 			self._parameter_to_map_to = None
 			self._request_rebuild()
 		self._parameter_last_num_value = 0
-	
+
 
 class CancellableBehaviourWithRelease(CancellableBehaviour):
 
 
 	def release_delayed(self, component, mode):
 		component.pop_mode(mode)
-	
+
 
 	def update_button(self, component, mode, selected_mode):
 		button = component.get_mode_button(mode)
@@ -158,7 +158,7 @@ class CancellableBehaviourWithRelease(CancellableBehaviour):
 		selected_groups = component.get_mode_groups(selected_mode)
 		value = (mode == selected_mode or bool(groups & selected_groups))*32 or 1
 		button.send_value(value, True)
-	
+
 
 
 class ResetSendsComponent(ControlSurfaceComponent):
@@ -167,22 +167,22 @@ class ResetSendsComponent(ControlSurfaceComponent):
 	def __init__(self, script, *a, **k):
 		super(ResetSendsComponent, self).__init__(*a, **k)
 		self._script = script
-	
+
 
 	def set_button(self, button):
 		self._on_button_value.subject = button
 		button and button.set_light('ResetSendsColor')
-	
+
 
 	def update(self):
 		pass
-	
-	
+
+
 	@subject_slot('value')
 	def _on_button_value(self, value):
 		if value:
 			self._on_button_value.subject and self.reset_send()
-	
+
 
 	def reset_send(self):
 		for track in self.tracks_to_use():
@@ -191,15 +191,15 @@ class ResetSendsComponent(ControlSurfaceComponent):
 		for track in self.returns_to_use():
 			for send in track.mixer_device.sends[:6]:
 				send.value = 0
-	
+
 
 	def tracks_to_use(self):
 		return self.song().tracks
-	
+
 
 	def returns_to_use(self):
 		return self.song().return_tracks
-	
+
 
 
 class DefaultsComponent(ControlSurfaceComponent):
@@ -211,17 +211,17 @@ class DefaultsComponent(ControlSurfaceComponent):
 		self._prefix = prefix
 		self._button = None
 		self._defaults_registry = []
-	
+
 
 	def disconnect(self, *a, **k):
 		super(DefaultsComponent, self).disconnect()
-	
+
 
 	def set_button(self, button):
 		self._button = button
 		self._on_button_value.subject = self._button
 		self.update()
-	
+
 
 	@subject_slot('value')
 	def _on_button_value(self, value):
@@ -233,7 +233,7 @@ class DefaultsComponent(ControlSurfaceComponent):
 					self._on_button_value.subject.turn_on()
 				else:
 					self._on_button_value.subject.turn_off()
-	
+
 
 	def set_defaults(self):
 		debug('set_defaults--------------------------------')
@@ -248,7 +248,7 @@ class DefaultsComponent(ControlSurfaceComponent):
 		for device in self.enumerate_track_device(self.song().master_track):
 			if device.class_name.endswith('GroupDevice'):
 				self.scan_device(device)
-	
+
 
 	def scan_device(self, device):
 		prefix = str(self._prefix)+':'
@@ -257,13 +257,13 @@ class DefaultsComponent(ControlSurfaceComponent):
 				if item.startswith(prefix):
 					vals = item.split(':')
 					self.set_param_to_default(param, vals[1])
-	
+
 
 	def set_param_to_default(self, param, val):
 		rst_val = float(val)/100
 		newval = float(rst_val * (param.max - param.min)) + param.min
 		param.value = newval
-	
+
 
 	def enumerate_track_device(self, track):
 		devices = []
@@ -275,12 +275,12 @@ class DefaultsComponent(ControlSurfaceComponent):
 						for chain_device in self.enumerate_track_device(chain):
 							devices.append(chain_device)
 		return devices
-	
+
 
 	def on_enabled_changed(self):
 		if self.is_enabled():
 			self.update()
-	
+
 
 
 class HKDefaultsComponent(DefaultsComponent):
@@ -293,7 +293,7 @@ class HKDefaultsComponent(DefaultsComponent):
 		mod = self._parent.modhandler.active_mod()
 		mod and mod._param_component.set_all_params_to_defaults()
 		self._parent.modhandler.reset_sequence()
-	
+
 
 	def scan_device(self, device):
 		prefix = str(self._prefix)+':'
@@ -302,7 +302,7 @@ class HKDefaultsComponent(DefaultsComponent):
 				if item.startswith(prefix) or item.startswith('@rst:'):
 					vals = item.split(':')
 					self.set_param_to_default(param, vals[1])
-	
+
 
 
 class PO10SessionComponent(SessionComponent):
@@ -316,7 +316,7 @@ class PO10SessionComponent(SessionComponent):
 				self._show_highlight and self._highlighting_callback(self._track_offset, self._scene_offset, self.width(), self.height(), include_returns)
 			else:
 				self._highlighting_callback(-1, -1, -1, -1, include_returns)
-	
+
 
 
 class ParamButton(ControlSurfaceComponent):
@@ -332,12 +332,12 @@ class ParamButton(ControlSurfaceComponent):
 		#self._feedback = self._no_feedback
 		self._default = None
 		self._type = None
-	
+
 
 	def set_button(self, button):
 		self._on_button_value.subject = button
 		button and button.turn_off()
-	
+
 
 	@subject_slot('value')
 	def _on_button_value(self, value):
@@ -345,7 +345,7 @@ class ParamButton(ControlSurfaceComponent):
 		if value > 0:
 			#debug('on_button_value to action, value is:', value)
 			self._action()
-	
+
 
 	@subject_slot('value')
 	def _on_param_value_changed(self):
@@ -373,7 +373,7 @@ class ParamButton(ControlSurfaceComponent):
 						button.turn_on()
 					else:
 						button.turn_off()
-	
+
 
 	def _on_shift_state_changed(self, param):
 		if self._type is 'shft' and self._param != None:
@@ -384,7 +384,7 @@ class ParamButton(ControlSurfaceComponent):
 				button and button.turn_on()
 			else:
 				button and button.turn_off()
-	
+
 
 	def set_param(self, param):
 		self._action = self.no_action
@@ -400,7 +400,7 @@ class ParamButton(ControlSurfaceComponent):
 			#debug('param:', self._param.name if self._param else None, self._type, self._default, self._action)
 		self._on_param_value_changed()
 
-	
+
 
 	def _scan_param(self, param):
 		if param and param.name:
@@ -468,24 +468,24 @@ class ParamButton(ControlSurfaceComponent):
 							self._action = self._set_all_to_defaults
 							self._type = 'defaults'
 							break
-	
+
 
 	@subject_slot('name')
 	def _on_param_name_changed(self):
 		debug('on_param_name_changed')
 		self._scan_param(self._original_param)
 		self._on_param_value_changed()
-	
+
 
 	def no_action(self):
 		pass
-	
+
 
 	def set_param_to_default(self):
 		debug('set_param_to_default', self._param, self._default)
 		if self._param and not self._default is None:
 			self._param.value = self._default
-	
+
 
 	def toggle(self):
 		if self._param:
@@ -496,26 +496,26 @@ class ParamButton(ControlSurfaceComponent):
 				self._param.value = float(self._param.max)
 		else:
 			debug('no param to toggle')
-	
+
 
 	def set_to_min(self):
 		if self._param:
 			self._param.value = self._param.min
-	
+
 
 	def set_to_max(self):
 		if self._param:
 			self._param.value = self._param.max
-	
+
 
 	def shift(self):
 		debug('button shift action...')
 		self._parent._shift_param(self._param)
-	
+
 
 	def _set_all_to_defaults(self):
 		self._parent and self._parent.set_all_params_to_defaults()
-	
+
 
 
 class PO10DeviceComponent(DeviceComponent):
@@ -529,7 +529,7 @@ class PO10DeviceComponent(DeviceComponent):
 		super(PO10DeviceComponent, self).__init__(*a, **k)
 		self._shifted_parameters = []
 		self._show_msg_callback = self._msg_pass
-	
+
 
 	def _shift_param(self, param):
 		shifted = False
@@ -544,11 +544,11 @@ class PO10DeviceComponent(DeviceComponent):
 			debug('shifting param')
 			self._shifted_parameters.append([self._device, param])
 			self._assign_parameters()
-	
+
 
 	def _msg_pass(self, *a, **k):
 		pass
-	
+
 
 	def set_parameter_buttons(self, controls):
 		for param_button in list(self._param_buttons or []):
@@ -559,7 +559,7 @@ class PO10DeviceComponent(DeviceComponent):
 				self._param_buttons[index].set_button(buttons[index])
 
 		#self._on_parameter_button_value.subject = controls
-	
+
 
 	@subject_slot('value')
 	def _on_parameter_button_value(self, val, num, *a, **k):
@@ -604,7 +604,7 @@ class PO10DeviceComponent(DeviceComponent):
 							elif vals[0] == 'defaults':
 								self.set_all_params_to_default()
 								break
-	
+
 
 	def _assign_parameters(self):
 		assert(self.is_enabled())
@@ -690,7 +690,7 @@ class PO10DeviceComponent(DeviceComponent):
 							else:
 								send_control.release_parameter()
 						index += 1
-	
+
 
 	def _current_send_track_details(self):
 		sends_list = [None for index in range(5)]
@@ -700,7 +700,7 @@ class PO10DeviceComponent(DeviceComponent):
 			if name in track_names:
 				sends_list[number] = tracks[track_names.index(name)]
 		return sends_list
-	
+
 
 	def set_all_params_to_defaults(self):
 		debug('set all parmas to default')
@@ -722,51 +722,51 @@ class PO10DeviceComponent(DeviceComponent):
 									self.set_param_to_default(param, vals[1])
 								else:
 									debug('no def value...')
-	
+
 
 	def set_param_to_default(self, param, val):
 		rst_val = float(val)/100
 		newval = float(rst_val * (param.max - param.min)) + param.min
 		param.value = newval
-	
+
 
 	def toggle_param(self, param):
 		if param.value == param.min:
 			param.value = param.max
 		else:
 			param.value = param.min
-	
+
 
 	def set_send_controls(self, controls):
 		for control in list(self._send_controls or []):
 			release_control(control)
 		self._send_controls = controls
-	
+
 
 	def set_send_feedback(self, controls):
 		for control in list(self._send_feedback or []):
 			release_control(control)
 		self._send_feedback = controls
-	
+
 
 	def set_send_buttons(self, buttons):
 		#for button in list(self._send_buttons or []):
 		#	release_control(button)
 		self._on_send_button_value.subject = buttons
-	
+
 
 	@subject_slot('value')
 	def _on_send_button_value(self, *a, **k):
 		debug('_on_send_button_value', a, k)
-	
+
 
 	def returns_to_use(self):
 		return self.song().return_tracks[:8]
-	
+
 
 	def _with_shift(self, button):
 		return ComboElement(button, modifiers=[self._shift_button])
-	
+
 
 
 class PO10DeviceSelectorComponent(ControlSurfaceComponent):
@@ -786,11 +786,11 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		self._selected_colorshift = SELECTED_COLORSHIFT
 		self._device_listener.subject = self.song()
 		self._device_listener()
-	
+
 
 	def disconnect(self, *a, **k):
 		super(PO10DeviceSelectorComponent, self).disconnect()
-	
+
 
 	def set_matrix(self, matrix):
 		buttons = []
@@ -802,20 +802,20 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 					button.set_enabled(True)
 					buttons.append(button)
 		self.set_buttons(buttons)
-	
+
 
 	def set_buttons(self, buttons):
 		self._buttons = buttons or []
 		self._on_button_value.replace_subjects(self._buttons)
 		self.update()
-	
+
 
 	@subject_slot_group('value')
 	def _on_button_value(self, value, sender):
 		if self.is_enabled():
 			if value:
 				self.select_device(self._buttons.index(sender))
-	
+
 
 	def select_device(self, index):
 		if self.is_enabled():
@@ -828,7 +828,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 				self.song().view.select_device(preset)
 				self._device_component.set_device(preset)
 			self.update()
-	
+
 
 	def scan_all(self):
 		debug('scan all--------------------------------')
@@ -861,7 +861,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 					self._device_registry[index] = device.chains[0].devices[0]
 		self.update()
 		#debug('device registry: ' + str(self._device_registry))
-	
+
 
 	def enumerate_track_device(self, track):
 		devices = []
@@ -873,7 +873,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 						for chain_device in self.enumerate_track_device(chain):
 							devices.append(chain_device)
 		return devices
-	
+
 
 	@subject_slot('appointed_device')
 	def _device_listener(self, *a, **k):
@@ -882,19 +882,19 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		self._watched_device = self.song().appointed_device
 		if self.is_enabled():
 			self.update()
-	
+
 
 	@subject_slot('name')
 	def _on_name_changed(self):
 		#debug('on name changed')
 		if self._watched_device == self.song().appointed_device:
 			self.scan_all()
-	
+
 
 	def on_enabled_changed(self):
 		if self.is_enabled():
 			self.update()
-	
+
 
 	def update(self):
 		if self.is_enabled():
@@ -920,7 +920,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 							button.turn_on()
 						else:
 							button.turn_off()
-	
+
 
 
 class ModDeviceSelector(PO10DeviceSelectorComponent):
@@ -938,12 +938,12 @@ class ModDeviceSelector(PO10DeviceSelectorComponent):
 					self.song().view.selected_track = track
 				self._device_component.set_device(preset)
 			self.update()
-	
+
 
 	def update(self):
 		super(ModDeviceSelector, self).update()
 		self._script._update_modswitcher()
-	
+
 
 
 class PO10M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
@@ -959,27 +959,27 @@ class PO10M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
 		self._controls = dict(map(lambda x: (x.name, x), controls))
 		self._grabbed_controls = []
 		self._component_guard = component_guard
-	
+
 
 	def disconnect(self):
 		for control in self._grabbed_controls[:]:
 			self.release_control(control)
 		super(PO10M4LInterfaceComponent, self).disconnect()
-	
+
 
 	def set_control_element(self, control, grabbed):
 		if hasattr(control, 'release_parameter'):
 			control.release_parameter()
 		control.reset()
-	
+
 
 	def get_control_names(self):
 		return self._controls.keys()
-	
+
 
 	def get_control(self, control_name):
 		return self._controls[control_name] if control_name in self._controls else None
-	
+
 
 	def grab_control(self, control):
 		assert(control in self._controls.values())
@@ -987,7 +987,7 @@ class PO10M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
 			if control not in self._grabbed_controls:
 				control.resource.grab(self, priority=self._priority)
 				self._grabbed_controls.append(control)
-	
+
 
 	def release_control(self, control):
 		assert(control in self._controls.values())
@@ -995,7 +995,7 @@ class PO10M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
 			if control in self._grabbed_controls:
 				self._grabbed_controls.remove(control)
 				control.resource.release(self)
-	
+
 
 
 class HotKnobComponent(ControlSurfaceComponent):
@@ -1003,28 +1003,28 @@ class HotKnobComponent(ControlSurfaceComponent):
 
 	def __init__(self, *a, **k):
 		super(HotKnobComponent, self).__init__(*a, **k)
-	
+
 
 	def set_button(self, button):
 		self._on_button_value.subject = button
-	
+
 
 	@subject_slot('value')
 	def _on_button_value(self, value):
 		if value:
 			pass
-	
+
 
 	def set_encoder(self, encoder):
 		if self._encoder:
 			release_control(self._encoder)
 		self._encoder = encoder
 		self._encoder.connect_to(self._parameter)
-	
+
 
 	def set_parameter(self, parameter):
 		self._parameter = parameter
-	
+
 
 
 class PO10(OptimizedControlSurface):
@@ -1057,17 +1057,17 @@ class PO10(OptimizedControlSurface):
 		#self.set_feedback_channels(range(14, 15))
 		#self._main_modes.selected_mode = 'MixMode'
 		self.schedule_message(1, self._open_log)
-	
+
 
 	def _open_log(self):
-		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._host_name) + " " + str(self._version_check) + " log opened =>>>>>>>>>>>>>>>>>>>") 
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._host_name) + " " + str(self._version_check) + " log opened =>>>>>>>>>>>>>>>>>>>")
 		self.show_message(str(self._host_name) + ' Control Surface Loaded')
-	
+
 
 	def _initialize_hardware(self):
 		#self._main_modes.selected_mode = 'MixMode'
 		pass
-	
+
 
 	def _check_connection(self):
 		#if not self._connected:
@@ -1075,7 +1075,7 @@ class PO10(OptimizedControlSurface):
 		#	self.schedule_message(100, self._check_connection)
 		if self._main_modes:
 			self._main_modes.selected_mode = 'Main'
-	
+
 
 	def port_settings_changed(self):
 		debug('port settings changed!')
@@ -1088,7 +1088,7 @@ class PO10(OptimizedControlSurface):
 		#		control.set_light('DefaultButton.On')
 		#	elif isinstance(control, CodecEncoderElement):
 		#		control.send_value(127, True)
-	
+
 
 	def _initialize_functionality(self):
 		if not self._po10_linked_script is None:
@@ -1106,7 +1106,7 @@ class PO10(OptimizedControlSurface):
 					self._setup_track_mutes()
 					#self._setup_translations()
 					self._setup_mod()
-					self._setup_modes() 
+					self._setup_modes()
 					self._setup_m4l_interface()
 				self._initialized = True
 				self._main_device_selector.select_device(DEFAULT_MASTER_DEVICE_INDEX)
@@ -1115,33 +1115,33 @@ class PO10(OptimizedControlSurface):
 				self.schedule_message(10, self._select_hex_mod)
 			else:
 				debug('No PO10b script linked....aborting initialization')
-	
+
 
 	def is_valid(self):
 		#cur_date = time.strftime("%x").split('/')
 		#valid = int(cur_date[0]) < 9 and int(cur_date[1]) < 7 and int(cur_date[2]) < 16
 		#return valid
 		return True
-	
+
 
 	def _setup_monobridge(self):
 		self._monobridge = MonoBridgeElement(self)
 		self._monobridge.name = 'MonoBridge'
-	
+
 
 	def _with_shift(self, button):
 		return ComboElement(button, modifiers=[self._shift_button])
-	
+
 
 	def _setup_controls(self):
-		is_momentary = True 
+		is_momentary = True
 		self._grid = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_GRID[index], name = 'Grid_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(16)]
 		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_BUTTONS[index], name = 'Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(30)]
 		self._key = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_KEYS[index], name = 'Key_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(32)]
-		#self._po10_encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index+13), PO10_ENCODERS[index], self) for index in range(5)] 
-		#self._encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10b_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(13)] 
-		#self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_ENCODER_BUTTONS[index], name = 'Encoder_Button_' + str(index), script = self, skin = self._skin) for index in range(18)]	
-		self._encoder_feedback = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(5)] 
+		#self._po10_encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index+13), PO10_ENCODERS[index], self) for index in range(5)]
+		#self._encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10b_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(13)]
+		#self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_ENCODER_BUTTONS[index], name = 'Encoder_Button_' + str(index), script = self, skin = self._skin) for index in range(18)]
+		self._encoder_feedback = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(5)]
 		self._encoder = self._po10_linked_script._po10b_encoders
 		self._encoder_button = self._po10_linked_script._po10b_encoder_buttons
 
@@ -1160,12 +1160,12 @@ class PO10(OptimizedControlSurface):
 		self._send_encoder_button_matrix = ButtonMatrixElement(name = 'Send_Encoder_Button_Matrix', rows = [self._encoder_button[13:]])
 		self._main_button_matrix = ButtonMatrixElement(name = 'Main_Matrix', rows = [self._button[22:25]])
 		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[:7] + self._button[8:16] + self._button[18:21]])
-	
+
 
 	def _define_sysex(self):
 		self._livid_settings = LividSettings(model = 9, control_surface = self)
-		#self.encoder_navigation_on = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [13, 0, 0, 0]) 
-	
+		#self.encoder_navigation_on = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [13, 0, 0, 0])
+
 
 	def _setup_session(self):
 		self._session = SessionComponent(name = 'Session_Component', num_tracks = 20, num_scenes = 1)
@@ -1176,36 +1176,36 @@ class PO10(OptimizedControlSurface):
 		self._session.set_show_highlight(True)
 		self._session.set_enabled(False)
 		self._session._link()
-	
+
 
 	def _setup_main_device_control(self):
 		self._main_device = PO10DeviceComponent()
 		self._main_device.layer = Layer(priority = 6, parameter_controls = self._main_encoder_matrix,
 											parameter_buttons = self._main_encoder_button_matrix)
 		self._main_device.set_enabled(True)
-	
+
 
 	def _setup_device_control(self):
 		self._device = PO10DeviceComponent()
-		self._device.layer = Layer(priority = 6, parameter_controls = self._device_encoder_matrix, 
+		self._device.layer = Layer(priority = 6, parameter_controls = self._device_encoder_matrix,
 											parameter_buttons = self._device_encoder_button_matrix,
 											send_controls = self._send_encoder_matrix,
 											send_buttons = self._send_encoder_button_matrix,
 											send_feedback = self._send_encoder_feedback_matrix)
 		self._device.set_enabled(True)
-	
+
 
 	def _setup_main_device_selector(self):
 		self._main_device_selector = PO10DeviceSelectorComponent(self, self._main_device, prefix = '@m')
 		self._main_device_selector.layer = Layer(priority = 6, matrix = self._main_button_matrix)
 		self._main_device_selector.set_enabled(True)
-	
+
 
 	def _setup_device_selector(self):
 		self._device_selector = ModDeviceSelector(self, self._device, prefix = '@d')
 		self._device_selector.layer = Layer(priority = 6, matrix = self._device_button_matrix)
 		self._device_selector.set_enabled(True)
-	
+
 
 	def _setup_kills(self):
 		self._hardkill_component = HKDefaultsComponent(self, '@hk')
@@ -1215,11 +1215,11 @@ class PO10(OptimizedControlSurface):
 		self._softkill_component = DefaultsComponent(self, '@sk')
 		self._softkill_component.set_enabled(True)
 		self._softkill_component.set_button(self._button[26])
-		
+
 		self._sendreset_component = ResetSendsComponent(self)
 		self._sendreset_component.set_enabled(True)
 		self._sendreset_component.set_button(self._button[7])
-	
+
 
 	def _setup_track_mutes(self):
 		self._AllBeats_channel_strip = ChannelStripComponent()
@@ -1227,7 +1227,7 @@ class PO10(OptimizedControlSurface):
 		self._BD_channel_strip = ChannelStripComponent()
 		self._BD_channel_strip._invert_mute_feedback = True
 		self._scan_for_track_mutes()
-	
+
 
 	def _scan_for_track_mutes(self):
 		for track in self.song().tracks:
@@ -1246,7 +1246,7 @@ class PO10(OptimizedControlSurface):
 				self._BD_channel_strip.set_mute_button(self._button[17])
 				self._BD_channel_strip.set_enabled(True)
 				break
-	
+
 
 	def _open_track_mutes(self):
 		track = self._AllBeats_channel_strip.track
@@ -1255,7 +1255,7 @@ class PO10(OptimizedControlSurface):
 		track = self._BD_channel_strip.track
 		if not track is None and isinstance(track, Live.Track.Track):
 			track.mixer_device.track_activator.value = 1
-	
+
 
 	def _setup_translations(self):
 		self._translations = TranslationComponent(self._translated_controls, user_channel_offset = 4, channel = 4)	# is_enabled = False)
@@ -1264,20 +1264,20 @@ class PO10(OptimizedControlSurface):
 		self._translations.selector_layer = AddLayerMode(self._translations, Layer(priority = 10, channel_selector_buttons = self._dial_button_matrix))
 		self._translations.set_enabled(False)
 
-		self._optional_translations = CompoundMode(TranslationComponent(controls = self._fader, user_channel_offset = 4, channel = 4, name = 'FaderTranslation', is_enabled = False, layer = Layer(priority = 10)) if FADER_BANKING else None, 
+		self._optional_translations = CompoundMode(TranslationComponent(controls = self._fader, user_channel_offset = 4, channel = 4, name = 'FaderTranslation', is_enabled = False, layer = Layer(priority = 10)) if FADER_BANKING else None,
 														TranslationComponent(controls = self._knobs, user_channel_offset = 4, channel = 4, name = 'DialTranslation', is_enabled = False, layer = Layer(priority = 10)) if DIAL_BANKING else None)
-	
+
 
 	def _setup_mod(self):
 		self.monomodular = get_monomodular(self)
 		self.monomodular.name = 'monomodular_switcher'
 		self.modhandler = PO10ModHandler(self) # is_enabled = False)
-		self.modhandler.name = 'ModHandler' 
+		self.modhandler.name = 'ModHandler'
 		self.modhandler.layer = Layer(priority = 8, po10_grid = self._matrix, po10_keys = self._key_matrix)
 		self.modhandler.partial_layer = AddLayerMode(self.modhandler, Layer(priority = 7, po10_encoder_grid = self._encoder_matrix, po10_encoder_button_grid = self._encoder_button_matrix))
 		self.modhandler.set_enabled(True)
 		self._select_hex_mod()
-	
+
 
 	def _select_hex_mod(self):
 		debug('select hex mod....')
@@ -1289,7 +1289,7 @@ class PO10(OptimizedControlSurface):
 					debug('hex mod found!')
 					self._update_modswitcher()
 					break
-	
+
 
 	def _setup_modes(self):
 		self._modswitcher = ModesComponent(name = 'ModSwitcher')  # is_enabled = False)
@@ -1310,12 +1310,12 @@ class PO10(OptimizedControlSurface):
 		#self._main_modes.add_mode('disabled', None)
 		#self._main_modes.add_mode('MixMode', [self._instrument, self._instrument.shift_button_layer, main_faders, self._mixer.main_knobs_layer, self._device.main_layer, self._device_navigator.main_layer,])	 # self._session.dial_nav_layer, self._mixer.dial_nav_layer, ])
 		#self._main_modes.add_mode('ModSwitcher', [main_faders, main_dials, self._mixer.main_knobs_layer, self._session.select_dial_layer, self._mixer.select_dial_layer, self._device_navigator.select_dial_layer, self.encoder_navigation_on, self._modswitcher, DelayMode(self._update_modswitcher)], behaviour = DefaultedBehaviour(default_mode = 'MixMode', color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled'))
-		#self._main_modes.add_mode('MainMode', [self.modhandler.partial_layer, DelayMode(self._update_modswitcher, delay = .1)], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled')), 
+		#self._main_modes.add_mode('MainMode', [self.modhandler.partial_layer, DelayMode(self._update_modswitcher, delay = .1)], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled')),
 		#self._main_modes.add_mode('ModMode', [self.modhandler, DelayMode(self._update_modswitcher, delay = .1)], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled'))
 		#self._main_modes.add_mode('Translations', [main_faders, main_dials, self._mixer.main_knobs_layer, self._translations, DelayMode(self._translations.selector_layer, delay = .1)], behaviour = DefaultedBehaviour(default_mode = 'MixMode', color = 'ModeButtons.Translations', off_color = 'ModeButtons.TranslationsDisabled'))
 		#self._main_modes.add_mode('DeviceSelector', [DelayMode(self._device_selector, delay = .1), DelayMode(self.modhandler.lock_layer, delay = .1), DelayMode(self._device_selector.assign_layer, delay = .2), main_buttons, main_dials, main_faders, self._mixer.main_knobs_layer, self._device, self._device.main_layer, self._device_navigator], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.DeviceSelector', off_color = 'ModeButtons.DeviceSelectorDisabled'))
-		#self._main_modes.layer = Layer(priority = 4, ModMode_button = self._button[0], MainMode_button = self._button[1]) #, 
-	
+		#self._main_modes.layer = Layer(priority = 4, ModMode_button = self._button[0], MainMode_button = self._button[1]) #,
+
 
 	def _setup_m4l_interface(self):
 		self._m4l_interface = MonoM4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
@@ -1324,21 +1324,21 @@ class PO10(OptimizedControlSurface):
 		self.get_control = self._m4l_interface.get_control
 		self.grab_control = self._m4l_interface.grab_control
 		self.release_control = self._m4l_interface.release_control
-	
+
 
 	def update_display(self):
 		super(PO10, self).update_display()
 		self._timer = (self._timer + 1) % 256
 		self.modhandler and self.modhandler.send_ring_leds()
 		self.flash()
-	
+
 
 	def flash(self):
 		if(self.flash_status > 0):
 			for control in self.controls:
 				if isinstance(control, MonoButtonElement):
-					control.flash(self._timer)		
-	
+					control.flash(self._timer)
+
 
 	def _update_modswitcher(self):
 		if self._initialized:
@@ -1349,13 +1349,13 @@ class PO10(OptimizedControlSurface):
 			else:
 				self._modswitcher.selected_mode = 'mod'
 				debug('switching to mod....')
-	
+
 
 	@subject_slot('appointed_device')
 	def _on_device_changed(self):
 		debug('appointed device changed, script')
 		#self._main_modes.selected_mode is 'ModSwitcher' and self.schedule_message(2, self._update_modswitcher)
-	
+
 
 	def generate_strip_string(self, display_string):
 		NUM_CHARS_PER_DISPLAY_STRIP = 12
@@ -1386,7 +1386,7 @@ class PO10(OptimizedControlSurface):
 		ret = ret.replace(' ', '_')
 		assert (len(ret) == NUM_CHARS_PER_DISPLAY_STRIP)
 		return ret
-	
+
 
 	def notification_to_bridge(self, name, value, sender):
 		if(isinstance(sender, (MonoEncoderElement, CodecEncoderElement))):
@@ -1394,14 +1394,14 @@ class PO10(OptimizedControlSurface):
 			pv = str(self.generate_strip_string(value))
 			self._monobridge._send(sender.name, 'lcd_name', pn)
 			self._monobridge._send(sender.name, 'lcd_value', pv)
-	
+
 
 	def touched(self):
 		if self._touched is 0:
 			self._monobridge._send('touch', 'on')
 			self.schedule_message(2, self.check_touch)
 		self._touched +=1
-	
+
 
 	def check_touch(self):
 		if self._touched > 5:
@@ -1412,11 +1412,11 @@ class PO10(OptimizedControlSurface):
 			self._monobridge._send('touch', 'off')
 		else:
 			self.schedule_message(2, self.check_touch)
-	
+
 
 	def handle_sysex(self, midi_bytes):
 		pass
-	
+
 
 	def disconnect(self):
 		self._session._unlink()
@@ -1424,14 +1424,14 @@ class PO10(OptimizedControlSurface):
 		super(PO10, self).disconnect()
 		if not self._po10_linked_script is None:
 			self._po10_linked_script._po10_linked_script = None
-	
+
 
 	def restart_monomodular(self):
 		#debug('restart monomodular')
 		self.modhandler.disconnect()
 		with self.component_guard():
 			self._setup_mod()
-	
+
 
 	def handle_sysex(self, midi_bytes):
 		#debug('sysex: ', str(midi_bytes))
@@ -1441,7 +1441,7 @@ class PO10(OptimizedControlSurface):
 					self._connected = True
 					#self._livid_settings.set_model(midi_bytes[11])
 					self._initialize_hardware()
-	
+
 
 	def connect_script_instances(self, instanciated_scripts):
 		self._po10_linked_script = None
@@ -1457,28 +1457,28 @@ class PO10(OptimizedControlSurface):
 			self._po10_linked_script.check_touch = self.check_touch
 			self._po10_linked_script.notification_to_bridge = self.notification_to_bridge
 			self._initialize_functionality()
-			
-	
+
+
 
 	def _send_midi(self, midi_event_bytes, optimized = True):
 		super(PO10, self)._send_midi(midi_event_bytes, optimized)
 		if not self._po10_linked_script is None:
 			if midi_event_bytes[0] == 144 and midi_event_bytes[1] in range(78, 95):
 				self._po10_linked_script._send_midi(midi_event_bytes, optimized)
-	
+
 
 	def softkill(self):
 		self._softkill_component.set_defaults()
-	
+
 
 	def hardkill(self):
 		self._hardkill_component.set_defaults()
-	
+
 
 	def forward_midi(self, *a, **k):
 		bytes = [int(byte) for byte in a]
 		self._send_midi(a)
-	
+
 
 
 class PO10b(OptimizedControlSurface):
@@ -1501,34 +1501,34 @@ class PO10b(OptimizedControlSurface):
 		self.flash_status = 1
 		self._skin = Skin(PO10Colors)
 		self.schedule_message(1, self._open_log)
-	
+
 
 	def _open_log(self):
-		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._host_name) + " " + str(self._po10_version) + " log opened =>>>>>>>>>>>>>>>>>>>") 
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._host_name) + " " + str(self._po10_version) + " log opened =>>>>>>>>>>>>>>>>>>>")
 		self.show_message(str(self._host_name) + ' Control Surface Loaded')
-	
+
 
 	def port_settings_changed(self):
 		debug('port settings changed!')
 		super(PO10b, self).port_settings_changed()
-	
+
 
 	def handle(self):
 		return self.__c_instance.handle()
-	
+
 
 	def build_midi_map(self, midi_map_handle):
 		super(PO10b, self).build_midi_map(midi_map_handle)
 		#for encoder in PO10b_ENCODERS:
 		#	Live.MidiMap.forward_midi_note(self.handle(), midi_map_handle, 0, encoder)
-	
+
 
 	def _setup_controls(self):
 		with self.component_guard():
-			is_momentary = True 
-			self._po10b_encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10b_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10b_ENCODERS[index], self) for index in range(18)] 
-			self._po10b_encoder_buttons = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10b_ENCODER_BUTTONS[index], name = 'Encoder_Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(18)]	
-	
+			is_momentary = True
+			self._po10b_encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10b_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10b_ENCODERS[index], self) for index in range(18)]
+			self._po10b_encoder_buttons = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10b_ENCODER_BUTTONS[index], name = 'Encoder_Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(18)]
+
 
 	def connect_script_instances(self, instanciated_scripts):
 		self._po10_linked_script = None
@@ -1542,17 +1542,17 @@ class PO10b(OptimizedControlSurface):
 			self.touched = self.pass_function
 			self.check_touch = self.pass_function
 			self.notification_to_bridge = self.pass_function
-	
+
 
 	def pass_function(self, *a, **k):
 		pass
-	
+
 
 	def disconnect(self):
 		super(PO10b, self).disconnect()
 		if not self._po10_linked_script is None:
 			self._po10_linked_script._po10_linked_script = None
-	
+
 
 
 class PO10ModHandler(ModHandler):
@@ -1573,13 +1573,13 @@ class PO10ModHandler(ModHandler):
 		super(PO10ModHandler, self).__init__(addresses = addresses, *a, **k)
 		self._color_type = 'Monochrome'
 		self.nav_box = self.register_component(NavigationBox(self, 16, 16, 4, 4, self.set_offset))
-	
+
 
 	def _receive_po10_grid(self, x, y, value = -1, *a, **k):
 		#debug('_receive_po10_grid:', x, y, value)
 		if self.is_enabled() and self._active_mod and not self._active_mod.legacy and not self._po10_grid is None and x < 4 and y < 4:
 			value > -1 and self._po10_grid.send_value(x, y, self._colors[value], True)
-	
+
 
 	def _receive_po10_encoder_grid(self, x, y, value = -1, mode = None, green = None, custom = None, local = None, relative = None, *a, **K):
 		#debug('_receive_po10_encoder_grid:', x, y, value, mode, green, custom, local, relative)
@@ -1596,19 +1596,19 @@ class PO10ModHandler(ModHandler):
 				custom and button.set_custom(custom)
 			not local is None and self._receive_po10_encoder_grid_local(local)
 			not relative is None and self._receive_po10_encoder_grid_relative(relative)
-	
+
 
 	def _receive_po10_encoder_button_grid(self, x, y, value, *a, **k):
 		if self.is_enabled() and self._active_mod:
 			if not self._po10_encoder_button_grid is None:
 				self._po10_encoder_button_grid.send_value(x, y, self._colors[value], True)
-	
+
 
 	def _receive_po10_encoder_grid_relative(self, value, *a):
 		#debug('_receive_po10_encoder_grid_relative:', value)
 		if self.is_enabled() and self._active_mod:
 			value and self._script._send_midi(tuple([240, 0, 1, 97, 8, 17, 127, 127, 127, 127, 247])) or self._script._send_midi(tuple([240, 0, 1, 97, 8, 17, 15, 0, 0, 0, 247]))
-	
+
 
 	def _receive_po10_encoder_grid_local(self, value, *a):
 		#debug('_receive_po10_encoder_grid_local:', value)
@@ -1616,39 +1616,39 @@ class PO10ModHandler(ModHandler):
 			self.clear_rings()
 			self._local = value
 			value and self._script._send_midi(tuple([240, 0, 1, 97, 8, 8, 72, 247])) or self._script._send_midi(tuple([240, 0, 1, 97, 8, 8, 64, 247]))
-	
+
 
 	def _receive_po10_key(self, x, y=0, value=0, *a):
 		#debug('_receive_po10_key:', x, y, value)
 		if self.is_enabled() and self._active_mod and not self._active_mod.legacy:
 			if not self._po10_keys is None:
 				self._po10_keys.send_value(x, y, self._colors[value], True)
-	
+
 
 	def _receive_grid(self, x, y, value = -1, *a, **k):
 		if self.is_enabled() and self._active_mod and self._active_mod.legacy:
 			if not self._po10_grid is None:
 				if (x - self.x_offset) in range(4) and (y - self.y_offset) in range(4):
 					self._po10_grid.send_value(x - self.x_offset, y - self.y_offset, self._colors[value], True)
-	
+
 
 
 	def set_po10_grid(self, grid):
 		self._po10_grid = grid
 		self._po10_grid_value.subject = self._po10_grid
-	
+
 
 	def set_po10_encoder_grid(self, grid):
 		self._po10_encoder_grid = grid
 		#self._po10_encoder_grid_value.subject = self._po10_encoder_grid
 		self.set_parameter_controls(grid)
 		#self.log_message('parameter controls are: ' + str(self._parameter_controls))
-	
+
 
 	def set_po10_encoder_button_grid(self, buttons):
 		self._po10_encoder_button_grid = buttons
 		self._po10_encoder_button_grid_value.subject = self._po10_encoder_button_grid
-	
+
 
 	def set_po10_keys(self, keys):
 		self._po10_keys = keys
@@ -1656,7 +1656,7 @@ class PO10ModHandler(ModHandler):
 			for key, _ in keys.iterbuttons():
 				key and key.set_darkened_value(0)
 		self._po10_keys_value.subject = self._po10_keys
-	
+
 
 
 	@subject_slot('value')
@@ -1664,7 +1664,7 @@ class PO10ModHandler(ModHandler):
 		#debug('_po10_keys_value:', x, y, value)
 		if self._active_mod:
 			self._active_mod.send('po10_key', x, y, value)
-	
+
 
 	@subject_slot('value')
 	def _po10_grid_value(self, value, x, y, *a, **k):
@@ -1674,21 +1674,21 @@ class PO10ModHandler(ModHandler):
 				self._active_mod.send('grid', x + self.x_offset, y + self.y_offset, value)
 			else:
 				self._active_mod.send('po10_grid', x, y, value)
-	
+
 
 	@subject_slot('value')
 	def _po10_encoder_grid_value(self, value, x, y, *a, **k):
 		#debug('_po10_encoder_grid_value:', x, y, value)
 		if self._active_mod:
 			self._active_mod.send('po10_encoder_grid', x, y, value)
-	
+
 
 	@subject_slot('value')
 	def _po10_encoder_button_grid_value(self, value, x, y, *a, **k):
 		#debug('_po10_encoder_button_grid_value:', x, y, value)
 		if self._active_mod:
 			self._active_mod.send('po10_encoder_button_grid', x, y, value)
-	
+
 
 
 	@subject_slot('appointed_device')
@@ -1697,7 +1697,7 @@ class PO10ModHandler(ModHandler):
 		#self._script._on_device_changed()
 		self._script._select_hex_mod()
 		pass
-	
+
 
 	def select_appointed_device(self, *a):
 		debug('select_appointed_device' + str(a))
@@ -1707,11 +1707,11 @@ class PO10ModHandler(ModHandler):
 			device_to_select = track.devices[0]
 		if self.modrouter.is_mod(device_to_select):
 			self.select_mod(self.modrouter.is_mod(device_to_select))
-	
+
 
 	def on_selected_track_changed(self):
 		pass
-	
+
 
 	def update(self, *a, **k):
 		mod = self.active_mod()
@@ -1732,7 +1732,7 @@ class PO10ModHandler(ModHandler):
 				self._po10_keys_value.subject.reset()
 		if not self._on_lock_value.subject is None:
 			self._on_lock_value.subject.send_value((not mod is None) + ((not mod is None) and self.is_locked() * 4))
-	
+
 
 	def send_ring_leds(self):
 		if self.is_enabled() and self._active_mod and not self._local and self._po10_encoder_grid:
@@ -1745,16 +1745,16 @@ class PO10ModHandler(ModHandler):
 			if not leds==self._last_sent_leds:
 				self._script._send_midi(tuple(leds))
 				self._last_sent_leds = leds
-	
+
 
 	def clear_rings(self):
 		self._last_sent_leds = 1
-	
+
 
 	def reset_sequence(self):
 		if self._active_mod:
 			self._active_mod.send('reset_sequence')
-	
+
 
 
 
