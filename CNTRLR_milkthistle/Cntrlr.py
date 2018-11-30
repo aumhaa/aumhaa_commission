@@ -1,5 +1,5 @@
 # by amounra 0218 : http://www.aumhaa.com
-# written against Live 10.01
+# written against Live 10.05 112718
 
 
 from __future__ import absolute_import, print_function
@@ -283,6 +283,19 @@ class MultiParameterToggleComponent(ParameterToggleComponent):
 
 
 	@listens('value')
+	def _on_button_value(self, value):
+		debug(self.name, '_on_button_value:', value)
+		if not self._parameter is None and not self._multiparameter1 is None and not self._multiparameter2 is None:
+			if value:
+				self._parameter.value = self._parameter.max
+				self._multiparameter1.value = self._multiparameter1.max
+				self._multiparameter2.value = self._multiparameter2.max
+			else:
+				self._parameter.value = self._parameter.min
+				self._multiparameter1.value = self._multiparameter1.min
+				self._multiparameter2.value = self._multiparameter2.min
+
+	@listens('value')
 	def _on_multiparameter1_value_changed(self):
 		if not self._multiparameter1 is None:
 			#debug(self.name, '_on_multiparameter1_value_changed:', self._multiparameter1.value)
@@ -346,13 +359,13 @@ class MilkthistleComponent(Component):
 		self._brake3 = ParameterToggleComponent(name = 'Brake3', device_number = 2, parameter_name = 'BRAKE')
 		self._brake3._on_value = 'Milkthistle.BrakeOn'
 		self._brake3._off_value = 'Milkthistle.BrakeOff'
-		self._tease1 = MultiParameterToggleComponent(name = 'Tease1', device_number = 3, multi1_device_number = 4, multi2_device_number = 5, parameter_name = 'TEASE', multiparameter1_name = 'LEFT MUTE', multiparameter2_name = 'RIGHT MUTE')
+		self._tease1 = MultiParameterToggleComponent(name = 'Tease1', device_number = 3, multi1_device_number = 4, multi2_device_number = 5, parameter_name = 'TEASE', multiparameter1_name = 'LEFT MUTE', multiparameter2_name = 'LEFT MUTE')
 		self._tease1._on_value = 'Milkthistle.TeaseOn'
 		self._tease1._off_value = 'Milkthistle.TeaseOff'
 		self._tease2 = MultiParameterToggleComponent(name = 'Tease2', device_number = 4, multi1_device_number = 3, multi2_device_number = 5, parameter_name = 'TEASE', multiparameter1_name = 'LEFT MUTE', multiparameter2_name = 'RIGHT MUTE')
 		self._tease2._on_value = 'Milkthistle.TeaseOn'
 		self._tease2._off_value = 'Milkthistle.TeaseOff'
-		self._tease3 = MultiParameterToggleComponent(name = 'Tease3', device_number = 5, multi1_device_number = 3, multi2_device_number = 4, parameter_name = 'TEASE', multiparameter1_name = 'LEFT MUTE', multiparameter2_name = 'RIGHT MUTE')
+		self._tease3 = MultiParameterToggleComponent(name = 'Tease3', device_number = 5, multi1_device_number = 3, multi2_device_number = 4, parameter_name = 'TEASE', multiparameter1_name = 'RIGHT MUTE', multiparameter2_name = 'RIGHT MUTE')
 		self._tease3._on_value = 'Milkthistle.TeaseOn'
 		self._tease3._off_value = 'Milkthistle.TeaseOff'
 

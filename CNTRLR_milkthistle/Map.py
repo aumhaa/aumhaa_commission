@@ -113,7 +113,7 @@ class CntrlrColors:
 		OverdubOff = LividRGB.RED
 		NudgeOn = LividRGB.BlinkFast.WHITE
 		NudgeOff = LividRGB.WHITE
-		TapTempoOn = LividRGB.BLUE
+		TapTempoOn = LividRGB.WHITE
 		LoopOn = LividRGB.GREEN
 		LoopOff = LividRGB.OFF
 	
@@ -128,8 +128,10 @@ class CntrlrColors:
 		ArmUnselected = LividRGB.RED
 		ArmOff = LividRGB.OFF
 		StopClip = LividRGB.RED
-		SelectedOn = LividRGB.BLUE
-		SelectedOff = LividRGB.OFF
+		StopClipTriggered = LividRGB.BlinkMedium.RED
+		StopClipOff = LividRGB.OFF
+		SelectedOn = LividRGB.BiColor.WHITE.BLUE
+		SelectedOff = LividRGB.BLUE
 	
 
 	class Recording:
@@ -168,6 +170,15 @@ class CntrlrColors:
 		ContainNavOn = LividRGB.CYAN
 		ContainNavOff = LividRGB.OFF
 	
+
+	class Milkthistle:
+		BrakeOn = LividRGB.BlinkMedium.MAGENTA
+		BrakeOff = LividRGB.MAGENTA
+		TeaseOn = LividRGB.BlinkMedium.MAGENTA
+		TeaseOff = LividRGB.MAGENTA
+	
+
+
 
 
 
