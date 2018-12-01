@@ -616,7 +616,10 @@ class PO10DeviceComponent(DeviceComponent):
 			if control != None:
 				is_shift_param = False
 				shifted_parameter = None
-				name = parameter.name
+				try:
+					name = parameter.name
+				except:
+					name = None
 				if name:
 					for entry in self._shifted_parameters:
 						if entry[0] == self._device and entry[1] == parameter:
