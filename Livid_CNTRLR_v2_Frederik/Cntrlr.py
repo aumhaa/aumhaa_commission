@@ -49,50 +49,12 @@ from .Map import *
 
 from Livid_CNTRLR_v2.Cntrlr import Cntrlr as Base_Cntrlr, CntrlrSessionNavigationComponent, CntrlrViewControlComponent, CntrlrResetSendsComponent, CntrlrSessionNavigationComponent, CntrlrMonoInstrumentComponent, CntrlrAutoArmComponent, CntrlrDeviceComponent
 
-class SpecialCntrlrMonoInstrumentComponent(CntrlrMonoInstrumentComponent):
-
-	def update(self):
-		super(MonoInstrumentComponent, self).update()
-		self._main_modes.selected_mode = 'disabled'
-		if self.is_enabled():
-			new_mode = 'disabled'
-			drum_device = find_drum_group_device(self.song.view.selected_track)
-			self._drumpad._drumgroup.set_drum_group_device(drum_device)
-			cur_track = self.song.view.selected_track
-			if cur_track.has_audio_input and cur_track in self.song.visible_tracks:
-				new_mode = 'audioloop'
-				if self._shifted:
-					new_mode += '_shifted'
-			elif cur_track.has_midi_input:
-				scale, mode = self._scale_offset_component.value, self._mode_component.value
-				new_mode = get_instrument_type(cur_track, scale, self._settings)
-				if mode is 'split':
-					new_mode += '_split'
-				elif mode is 'seq':
-					new_mode +=  '_sequencer'
-				if self._shifted:
-					new_mode += '_shifted'
-				if self._matrix_modes.selected_mode is 'enabled':
-					new_mode += '_session'
-				self._script.set_feedback_channels([self._scale_offset_component.channel])
-				self._script.set_controlled_track(self.song.view.selected_track)
-			if new_mode in self._main_modes._mode_map or new_mode is None:
-				self._main_modes.selected_mode = new_mode
-				#self._script.set_controlled_track(None)  //commented this to get note feedback working in sequencer drumpad component
-			else:
-				self._main_modes.selected_mode = 'disabled'
-				self._script.set_controlled_track(None)
-			debug('monoInstrument mode is:', self._main_modes.selected_mode, '  inst:', self.is_enabled(), '  modes:', self._main_modes.is_enabled(), '   key:', self._keypad.is_enabled(), '   drum:', self._drumpad.is_enabled())
-
-
-
-
 
 """
 Some wierd hacks that had to happen:
 
 	Set the feedback channels via a ControlSurfaceComponent override (top level)
-	 	because note feedback wasn't working
+		because note feedback wasn't working
 	Also added a listener for view.detail_clip @ _on_detail_clip_changed() to keep
 		refreshing the task in LoopSelector so that it will keep following (wasn't
 		working in the original script)
@@ -132,10 +94,17 @@ def enumerate_track_device(track):
 
 
 
+def has_playing_clips(scene):
+	if liveobj_valid(scene):
+		for clip_slot in scene.clip_slots:
+			if clip_slot.is_playing or clip_slot.is_triggered:
+				return True
+	return False
+
 
 class SpecialSessionComponent(SessionComponent):
 
-	fire_scene_button = ButtonControl()
+	fire_next_scene_button = ButtonControl(color = 'Session.FireNextSceneButton')
 
 	def _update_stop_all_clips_button(self):
 		if self.is_enabled():
@@ -143,10 +112,27 @@ class SpecialSessionComponent(SessionComponent):
 			if button:
 				button.set_light('Session.StopClipTriggered' if button.is_pressed() else 'Session.StopClip')
 
-	@fire_scene_button.pressed
-	def fire_scene_button(self, button):
+	@fire_next_scene_button.pressed
+	def fire_next_scene_button(self, button):
 		debug('fire_scene_button.value:', button)
-		#self._selected_scene.
+		self._do_fire_next_scene()
+
+	def _do_fire_next_scene(self):
+		song = self.song
+		selected_scene = song.view.selected_scene
+		if not has_playing_clips(selected_scene):
+			selected_scene.fire()
+		else:
+			scenes = list(song.scenes)
+			index = scenes.index(selected_scene)
+			num_scenes = len(scenes)
+			if index < (num_scenes - 1):
+				next_scene = scenes[index + 1]
+				try:
+					next_scene.fire()
+					song.view.selected_scene = next_scene
+				except:
+					debug('_do_fire_next_scene error')
 
 
 class SelectedSceneScroller(Scrollable):
@@ -154,6 +140,7 @@ class SelectedSceneScroller(Scrollable):
 	def __init__(self, song = None, *a, **k):
 		self.song = song
 		super(SelectedSceneScroller, self).__init__(*a, **k)
+		#self._on_selected_scene_changed.subject = self.song.view
 
 	def can_scroll_up(self):
 		view = self.song.view
@@ -191,6 +178,9 @@ class SelectedSceneScroller(Scrollable):
 			except:
 				debug('couldnt scroll down')
 
+	@listens(u'selected_scene')
+	def _on_selected_scene_changed(self):
+		self.update()
 
 
 
@@ -208,8 +198,13 @@ class Cntrlr(Base_Cntrlr):
 			button._skin = self._skin
 		self._main_modes.selected_mode = 'FrederikMode'
 		self._on_detail_clip_changed.subject = self.song.view
-		self.set_feedback_channels(range(0, 15))
+		self._on_selected_scene_changed.subject = self.song.view
+		#self.set_feedback_channels(range(0, 15))
 		#self.schedule_message(10, self.initialize_frederik_mode)
+
+	@listens(u'selected_scene')
+	def _on_selected_scene_changed(self):
+		self._scene_scroller.update()
 
 	def initialize_frederik_mode(self):
 		self._main_modes.selected_mode = "FrederikMode"
@@ -221,9 +216,9 @@ class Cntrlr(Base_Cntrlr):
 	def _initialize_script(self):
 		super(Cntrlr, self)._initialize_script()
 		self._connected = True
-		self._main_modes.selected_mode = 'FrederikMode'
-		self._main_modes.set_enabled(True)
-		self._instrument.set_enabled(True)
+		#self._main_modes.selected_mode = 'FrederikMode'
+		#self._main_modes.set_enabled(True)
+		#self._instrument.set_enabled(True)
 		self._main_modes.selected_mode = 'disabled'
 		self._main_modes.selected_mode = 'FrederikMode'
 		#self._session_ring._update_highlight()
@@ -255,9 +250,9 @@ class Cntrlr(Base_Cntrlr):
 
 		self._session = SessionComponent(session_ring = self._session_ring, auto_name = True)
 		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
-		self._session.clip_launch_layer = LayerMode(self._session, Layer(priority = 5,stop_all_clips_button = self._button[29]))
-		self._session.stop_all_clips_layer = AddLayerMode(self._session, Layer(priority = 6, stop_all_clips_button = self._button[29]))
-		self._session.scene_launch_layer = AddLayerMode(self._session._selected_scene, Layer(priority = 5,stop_all_clips_button = self._button[29]))
+		self._session.clip_launch_layer = LayerMode(self._session, Layer(priority = 5,stop_all_clips_button = self._button[27]))
+		self._session.stop_all_clips_layer = AddLayerMode(self._session, Layer(priority = 6, stop_all_clips_button = self._button[27]))
+		self._session.scene_launch_layer = AddLayerMode(self._session._selected_scene, Layer(priority = 5,stop_all_clips_button = self._button[27]))
 		self._session.set_enabled(False)
 
 		self._session_zoom = SessionOverviewComponent(name = 'SessionZoom', session_ring = self._session_ring, enable_skinning = True)
@@ -268,11 +263,11 @@ class Cntrlr(Base_Cntrlr):
 		self._session_ring2.set_enabled(False)
 
 		self._session2 = SpecialSessionComponent(session_ring = self._session_ring2, auto_name = True)
-		self._session2._selected_scene.layer = Layer(priority = 5, launch_button = self._button[28])
-		self._session2.layer = Layer(priority = 5, stop_all_clips_button = self._button[29]) #, fire_scene_button = self._button[28])
+		self._session2._selected_scene.layer = Layer(priority = 5, launch_button = self._button[30])
+		self._session2.layer = Layer(priority = 5, stop_all_clips_button = self._button[27], fire_next_scene_button = self._button[31]) #, fire_scene_button = self._button[28])
 
 		self._scene_scroller = ScrollComponent(scrollable = SelectedSceneScroller(song = self.song))
-		self._scene_scroller.layer = Layer(priority = 5, scroll_up_button = self._button[31], scroll_down_button = self._button[30])
+		self._scene_scroller.layer = Layer(priority = 5, scroll_up_button = self._button[29], scroll_down_button = self._button[28])
 		self._scene_scroller.set_enabled(False)
 
 	def _setup_mixer_control(self):
@@ -334,18 +329,18 @@ class Cntrlr(Base_Cntrlr):
 		self._instrument._main_modes._mode_map['audioloop'] = _ModeEntry(mode=tomode(self._audioloop_pass), cycle_mode_button_color=None, behaviour=self._instrument._main_modes.default_behaviour, groups=set())
 		self._instrument.shift_button_layer = AddLayerMode(self._instrument, Layer(priority = 5,))
 		self._instrument._drumpad._step_sequencer._loop_selector._follow_task.restart()
-		self._instrument._drumpad._step_sequencer._playhead_component._feedback_channels = range(16)
+		#self._instrument._drumpad._step_sequencer._playhead_component._feedback_channels = range(16)
 
 	def _setup_instrument(self):
 		self._grid_resolution = self.register_disconnectable(GridResolution())
-		self._c_instance.playhead.enabled = True
+		#self._c_instance.playhead.enabled = True
 		self._playhead_element = PlayheadElement(self._c_instance.playhead)
 
 		self._drum_group_finder = PercussionInstrumentFinder(device_parent=self.song.view.selected_track)
 
-		self._instrument = SpecialCntrlrMonoInstrumentComponent(name = 'InstrumentComponent', is_enabled = True, script = self, skin = self._skin, grid_resolution = self._grid_resolution, drum_group_finder = self._drum_group_finder, parent_task_group = self._task_group, settings = DEFAULT_INSTRUMENT_SETTINGS, device_provider = self._device_provider)
+		self._instrument = CntrlrMonoInstrumentComponent(name = 'InstrumentComponent', is_enabled = True, script = self, skin = self._skin, grid_resolution = self._grid_resolution, drum_group_finder = self._drum_group_finder, parent_task_group = self._task_group, settings = DEFAULT_INSTRUMENT_SETTINGS, device_provider = self._device_provider)
 		self._instrument.shift_button_layer = AddLayerMode(self._instrument, Layer(priority = 5,))
-		self._instrument.audioloop_layer = AddLayerMode(self._instrument, Layer(priority = 5, loop_selector_matrix = self._key_matrix.submatrix[:, 0]))
+		self._instrument.audioloop_layer = AddLayerMode(self._instrument, Layer(priority = 5, loop_selector_matrix = self._key_matrix.submatrix[:, 0],))
 
 		self._instrument.keypad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 5,
 									scale_up_button = self._button[13],
@@ -367,10 +362,10 @@ class Cntrlr(Base_Cntrlr):
 									split_button = self._button[14],
 									sequencer_button = self._button[15]))
 
-		self._instrument._keypad.sequencer_layer = LayerMode(self._instrument._keypad, Layer(priority = 5,
-																										playhead = self._playhead_element,
-		 																								keypad_matrix = self._matrix.submatrix[:,:],
-																										sequencer_matrix = self._key_matrix.submatrix[:,0]))
+		self._instrument._keypad.sequencer_layer = LayerMode(self._instrument._keypad, Layer(priority = 5, playhead = self._playhead_element,
+																										keypad_matrix = self._matrix.submatrix[:,:],
+																										sequencer_matrix = self._key_matrix.submatrix[:,0],
+																										))
 		self._instrument._keypad.split_layer = LayerMode(self._instrument._keypad, Layer(priority = 5,
 																										keypad_matrix = self._matrix.submatrix[:,:],
 																										split_matrix = self._key_matrix.submatrix[:14,0]))
@@ -389,10 +384,10 @@ class Cntrlr(Base_Cntrlr):
 																										quantization_buttons = self._key_matrix.submatrix[:7, 1:],))
 																										#follow_button = self._button[23]))
 
-		self._instrument._drumpad.sequencer_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5,
-																										playhead = self._playhead_element,
+		self._instrument._drumpad.sequencer_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5, playhead = self._playhead_element,
 																										drumpad_matrix = self._matrix.submatrix[:,:],
-																										sequencer_matrix = self._key_matrix.submatrix[:,:1]))
+																										sequencer_matrix = self._key_matrix.submatrix[:,0],
+																										))
 		self._instrument._drumpad.split_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5,
 																										drumpad_matrix = self._matrix.submatrix[:,:],
 																										split_matrix = self._key_matrix.submatrix[:16,:1]))
@@ -402,29 +397,13 @@ class Cntrlr(Base_Cntrlr):
 																										quantization_buttons = self._key_matrix.submatrix[:7, 1:],))
 																										#follow_button = self._button[23]))
 		self._instrument._drumpad.sequencer_session_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5,
-																										playhead = self._playhead_element,
 																										sequencer_matrix = self._key_matrix.submatrix[:,:1]))
 		self._instrument._drumpad.split_session_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5,
 																										split_matrix = self._key_matrix.submatrix[:16,:1]))
 		self._instrument._drumpad.sequencer_session_shift_layer = LayerMode(self._instrument._drumpad, Layer(priority = 5,
 																										loop_selector_matrix = self._key_matrix.submatrix[:8, :1],
-																										quantization_buttons = self._key_matrix.submatrix[:8, 1:],))
-																										#follow_button = self._button[23]))
-
+																										quantization_buttons = self._key_matrix.submatrix[:8, 1:],))  #follow_button = self._button[23]))
 		#self._instrument.set_session_mode_button(self._button[30])
-
-	"""
-	def _setup_modes(self):
-		super(Cntrlr, self)._setup_modes()
-		self._main_modes.add_mode('FrederikMode', [self._instrument,
-													self._scene_scroller,
-													self._session2,])
-		self._main_modes.layer = Layer(priority = 5)
-		self._main_modes.selected_mode = 'FrederikMode'
-		self._main_modes.set_enabled(True)
-
-		self._test.subject = self._instrument._main_modes
-	"""
 
 	def _setup_modes(self):
 
@@ -566,19 +545,41 @@ class Cntrlr(Base_Cntrlr):
 		self._main_modes.layer = Layer(priority = 5)
 		self._main_modes.selected_mode = 'FrederikMode'
 		self._main_modes.set_enabled(True)
-
 		#self._test.subject = self._instrument._main_modes
 
 
 	@listens(u'detail_clip')
 	def _on_detail_clip_changed(self):
 		self._instrument._drumpad._step_sequencer._loop_selector._follow_task.restart()
+		#playhead = self._instrument._drumpad._step_sequencer._playhead_component
+		#debug('VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV')
+		#debug('playhead playhead:', playhead._playhead)
+		#debug('playhead clip:', playhead._clip.name if playhead._clip and hasattr(playhead._clip, 'name') else None)
+		#debug('playhead notes:', playhead._notes)
+		#debug('playhead feedback_channels:', playhead._feedback_channels)
+		#debug('enabled:', playhead._playhead.enabled if playhead._playhead and hasattr(playhead._playhead, 'enabled') else 'False')
+		#debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+		#self.schedule_message(2, self.update_playhead)
 
 
-	def set_feedback_channels(self, channels):
-		debug('set_feedback_channels:', channels)
-		super(Cntrlr, self).set_feedback_channels(range(15))
-
-
+	@listens('selected_mode')
+	def _test(self, *a):
+		comps = [self._main_modes, self._modswitcher, self._instrument, self._instrument._main_modes,  self._instrument._matrix_modes, self._instrument._selected_session, self._session,  self._device, self._mixer, self._session_navigation, self._session_zoom, self._recorder, self._transport]
+		debug('VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV')
+		"""
+		debug('main mode:', self._main_modes.selected_mode)
+		debug('instrument mode:', self._instrument._main_modes.selected_mode)
+		debug('modswitcher mode:', self._modswitcher.selected_mode)
+		debug('instrument matrix mode:', self._instrument._matrix_modes.selected_mode)
+		for comp in comps:
+			debug(comp.name, 'is enabled:', comp.is_enabled())
+		"""
+		playhead = self._instrument._drumpad._step_sequencer._note_editor._playhead_component
+		debug('playhead playhead:', playhead._playhead)
+		debug('playhead clip:', playhead._clip)
+		debug('playhead notes:', playhead._notes)
+		debug('playhead playhead:', playhead._playhead)
+		debug('playhead feedback_channels:', playhead._feedback_channels)
+		debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
 #	a

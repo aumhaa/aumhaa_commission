@@ -93,9 +93,10 @@ class CntrlrColors:
 
 
 	class Session:
+		FireNextSceneButton = LividRGB.BLUE
 		StopClipTriggered = LividRGB.BlinkFast.RED
 		StopClip = LividRGB.RED
-		Scene = LividRGB.GREEN
+		Scene = LividRGB.BLUE
 		NoScene = LividRGB.OFF
 		SceneTriggered = LividRGB.BlinkFast.GREEN
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
