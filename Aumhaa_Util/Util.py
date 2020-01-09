@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 #from itertools import izip, izip_longest, product
 from ableton.v2.control_surface.control_surface import ControlSurface
-from ableton.v2.control_surface.components import M4LInterfaceComponent
+#from ableton.v2.control_surface.components import M4LInterfaceComponent
 #from aumhaa.v2.base.utils import load_preset
 from aumhaa.v2.base.debug import initialize_debug
 
@@ -24,16 +24,16 @@ class Util(ControlSurface):
 		self.log_message('<<<<<<<<<<<<<<<<<<<<<<<<< Util log opened >>>>>>>>>>>>>>>>>>>>>>>>>')
 		self.show_message('Util Control Surface Loaded')
 		self._controls = []
-		with self.component_guard():
-			self._setup_m4l_interface()
-	
+		#with self.component_guard():
+		#	self._setup_m4l_interface()
 
-	def _setup_m4l_interface(self, *a, **k):
-			self._m4l_interface = M4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard)
-			self.get_control_names = self._m4l_interface.get_control_names
-			self.get_control = self._m4l_interface.get_control
-			self.grab_control = self._m4l_interface.grab_control
-			self.release_control = self._m4l_interface.release_control
+
+	#def _setup_m4l_interface(self, *a, **k):
+	#		self._m4l_interface = M4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard)
+	#		self.get_control_names = self._m4l_interface.get_control_names
+	#		self.get_control = self._m4l_interface.get_control
+	#		self.grab_control = self._m4l_interface.grab_control
+	#		self.release_control = self._m4l_interface.release_control
 
 
 	def load_preset(self, target = None, folder = None, directory = 'defaultPresets'):
@@ -102,8 +102,3 @@ class Util(ControlSurface):
 										else:
 											debug(inneritem, 'item isnt loadable 4')
 											break
-	
-
-
-
-

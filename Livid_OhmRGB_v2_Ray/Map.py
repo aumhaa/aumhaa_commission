@@ -317,16 +317,16 @@ class OhmColors:
 
 
 	class DrumGroup:
-		PadAction = LividRGB.WHITE
+		#PadAction = LividRGB.WHITE
 		PadFilled = LividRGB.GREEN
 		PadFilledAlt = LividRGB.MAGENTA
-		PadSelected = LividRGB.WHITE
-		PadSelectedNotSoloed = LividRGB.WHITE
+		PadSelected = LividRGB.BlinkFast.WHITE
+		PadSelectedNotSoloed = LividRGB.BlinkFast.WHITE
 		PadEmpty = LividRGB.OFF
 		PadMuted = LividRGB.YELLOW
-		PadSoloed = LividRGB.CYAN
-		PadMutedSelected = LividRGB.BLUE
-		PadSoloedSelected = LividRGB.BLUE
+		PadSoloed = LividRGB.BLUE
+		PadMutedSelected = LividRGB.BlinkFast.YELLOW
+		PadSoloedSelected = LividRGB.BlinkFast.BLUE
 		PadInvisible = LividRGB.OFF
 		PadAction = LividRGB.RED
 
