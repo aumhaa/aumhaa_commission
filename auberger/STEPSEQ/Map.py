@@ -25,6 +25,12 @@ STEPSEQ_ENCODER_BUTTONS = range(4)
 
 COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
 
+NOTEBANKS = [range(32), range(32,64), range(64,96), range(96,128)]
+TRIPLET_NOTEBANKS = [[0,1,2,3,4,5,6,7,8,9,10,11,12,16,17,18,19,20,21,22,23,24,25,26,27],
+			[32,33,34,35,36,37,38,39,40,41,42,43,48,49,50,51,52,53,54,55,56,57,58,59],
+			[64,65,66,67,68,69,70,71,72,73,74,75,80,81,82,83,84,85,86,87,88,89,90,91],
+			[96,97,98,99,100,101,102,103,104,105,106,107,112,113,114,115,116,117,118,119,120,121,122,123]]
+
 """The values in this array determine the choices for what length of clip is created when "Fixed Length" is turned on:
 0 = 1 Beat
 1 = 2 Beat
@@ -97,19 +103,19 @@ class STEPSEQColors:
 		StepEmptyBase = LividRGB.OFF
 		StepEmptyScale = LividRGB.OFF
 		StepDisabled = LividRGB.OFF
-		Playhead = Color(31)
-		PlayheadRecord = Color(31)
+		Playhead = Color(127)
+		PlayheadRecord = Color(127)
 		StepSelected = LividRGB.GREEN
 		QuantizationSelected = LividRGB.RED
-		QuantizationUnselected = LividRGB.MAGENTA
+		QuantizationUnselected = LividRGB.OFF
 
 
 	class LoopSelector:
 		Playhead = LividRGB.YELLOW
-		OutsideLoop = LividRGB.BLUE
-		InsideLoopStartBar = LividRGB.CYAN
+		OutsideLoop = LividRGB.OFF
+		InsideLoopStartBar = LividRGB.OFF
 		SelectedPage = LividRGB.WHITE
-		InsideLoop = LividRGB.CYAN
+		InsideLoop = LividRGB.OFF
 		PlayheadRecord = LividRGB.RED
 
 
@@ -196,13 +202,6 @@ class STEPSEQColors:
 		LevelNavOff = LividRGB.OFF
 
 
-	class Mod:
-		class Nav:
-			OnValue = LividRGB.RED
-			OffValue = LividRGB.WHITE
-
-
-
 	class MonoInstrument:
 
 		PressFlash = LividRGB.WHITE
@@ -231,150 +230,3 @@ class STEPSEQColors:
 			SelectedNote = LividRGB.BLUE
 			EvenValue = LividRGB.GREEN
 			OddValue = LividRGB.MAGENTA
-
-
-
-
-	class Translation:
-
-		SelectorOn = LividRGB.WHITE
-		SelectorOff = LividRGB.OFF
-
-		class Channel_10:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-
-
-		class Channel_11:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-
-
-		class Channel_12:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-
-
-		class Channel_13:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
