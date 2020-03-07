@@ -23,7 +23,7 @@ STEPSEQ_BUTTONS = range(8)
 STEPSEQ_ENCODERS = range(4)
 STEPSEQ_ENCODER_BUTTONS = range(4)
 
-COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
+COLOR_MAP = [1, 2, 3, 4, 5, 6, 6]
 
 NOTEBANKS = [range(32), range(32,64), range(64,96), range(96,128)]
 TRIPLET_NOTEBANKS = [[0,1,2,3,4,5,6,7,8,9,10,11,12,16,17,18,19,20,21,22,23,24,25,26,27],
@@ -103,19 +103,19 @@ class STEPSEQColors:
 		StepEmptyBase = LividRGB.OFF
 		StepEmptyScale = LividRGB.OFF
 		StepDisabled = LividRGB.OFF
-		Playhead = Color(127)
-		PlayheadRecord = Color(127)
+		Playhead = Color(5)
+		PlayheadRecord = Color(6)
 		StepSelected = LividRGB.GREEN
 		QuantizationSelected = LividRGB.RED
 		QuantizationUnselected = LividRGB.OFF
 
 
 	class LoopSelector:
-		Playhead = LividRGB.YELLOW
-		OutsideLoop = LividRGB.OFF
-		InsideLoopStartBar = LividRGB.OFF
-		SelectedPage = LividRGB.WHITE
-		InsideLoop = LividRGB.OFF
+		Playhead = LividRGB.GREEN
+		OutsideLoop = LividRGB.WHITE
+		InsideLoopStartBar = LividRGB.CYAN
+		SelectedPage = LividRGB.MAGENTA
+		InsideLoop = LividRGB.BLUE
 		PlayheadRecord = LividRGB.RED
 
 

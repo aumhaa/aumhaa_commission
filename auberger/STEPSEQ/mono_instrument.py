@@ -125,9 +125,14 @@ class SpecialPlayheadComponent(PlayheadComponent):
 		self._note_banks = []
 		self._triplet_note_banks = []
 		self._note_bank_length = 32
-		self._triplet_note_bank_length = 28
+		self._triplet_note_bank_length = 24
 		super(SpecialPlayheadComponent, self).__init__(*a, **k)
 		#self._on_follower_page_index_changed.subject = self._follower
+
+	@property
+	def note_bank_length(self):
+		return 	self._triplet_note_bank_length if self._grid_resolution.clip_grid[1] else self._note_bank_length
+
 
 	def set_note_banks(self, note_banks):
 		self._note_banks = note_banks
@@ -136,7 +141,7 @@ class SpecialPlayheadComponent(PlayheadComponent):
 
 	def set_triplet_note_banks(self, note_banks):
 		self._triplet_note_banks = note_banks
-		self._triplet_note_bank_length = len(note_banks[0])
+		self._triplet_note_bank_length = len(self._triplet_note_banks[0])
 
 
 	def update(self):
@@ -161,7 +166,7 @@ class SpecialPlayheadComponent(PlayheadComponent):
 				#step_length = self._paginator.page_length / (self._triplet_note_bank_length if is_triplet else self._note_bank_length)
 				step_length = self._parent._note_editor._get_step_length()
 				start_time = (self._paginator.page_length * self._paginator.page_index)
-				start_time += (step_length * 32 * self._playhead_page)
+				start_time += (step_length * self.note_bank_length * self._playhead_page)
 				self._playhead.start_time = start_time
 				self._playhead.step_length = step_length
 				# debug('wrap_around:', wrap_around, 'start_time:', start_time, 'step_length:', step_length)
@@ -197,7 +202,9 @@ class SpecialPlayheadComponent(PlayheadComponent):
 			#step_length = self._grid_resolution.step_length
 			#step_length = self._paginator.page_length / self._note_bank_length
 			step_length = self._parent._note_editor._get_step_length()
-			page = int(int(position / step_length) / self._note_bank_length)
+			# is_triplet = self._grid_resolution.clip_grid[1]
+			page = int(int(position / step_length) / (self.note_bank_length))
+			# page = int(int(position / step_length) / (self._note_bank_length))
 			if page != self._playhead_page:
 				self._playhead_page = page
 				# debug('page:', page, 'position:', position, 'steps:', steps, 'step_length:', step_length)
@@ -251,7 +258,7 @@ class MonoNoteEditorComponent(NoteEditorComponent):
 
 	"""Custom function for displaying triplets for different grid sizes, called by _visible steps"""
 	# _visible_steps_model = lambda self, indices: filter(lambda k: k % 4 != 3, indices)
-	_visible_steps_model = lambda self, indices: filter(lambda k: k % 16 not in (12, 13, 14, 15), indices)
+	_visible_steps_model = lambda self, indices: filter(lambda k: (k % 16) < 12, indices)
 	matrix = control_matrix(PadControl, channel=15, sensitivity_profile=u'loop', mode=PlayableControl.Mode.listenable)
 
 	@matrix.pressed
@@ -262,10 +269,10 @@ class MonoNoteEditorComponent(NoteEditorComponent):
 	def matrix(self, button):
 		super(MonoNoteEditorComponent, self)._on_pad_released(button.coordinate)
 
-	def _on_pad_pressed(self, coordinate):
-		y, x = coordinate
-		#debug('MonoNoteEditorComponent._on_pad_pressed:', y, x)
-		super(MonoNoteEditorComponent, self)._on_pad_pressed(coordinate)
+	# def _on_pad_pressed(self, coordinate):
+	# 	y, x = coordinate
+	# 	#debug('MonoNoteEditorComponent._on_pad_pressed:', y, x)
+	# 	super(MonoNoteEditorComponent, self)._on_pad_pressed(coordinate)
 
 	def _visible_steps(self):
 		first_time = self.page_length * self._page_index
@@ -273,7 +280,7 @@ class MonoNoteEditorComponent(NoteEditorComponent):
 		step_length = self._get_step_length()
 		indices = range(steps_per_page)
 		if is_triplet_quantization(self._triplet_factor):
-			indices = self._visible_steps_model(indices)
+			indices = filter(lambda k: k % 16 not in (12, 13, 14, 15), indices)
 		return [ (self._time_step(first_time + k * step_length), index) for k, index in enumerate(indices) ]
 
 
