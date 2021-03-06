@@ -1,7 +1,7 @@
 # by amounra 0513 : http://www.aumhaa.com
 # written against Live 10.0.4 100918
 
-from __future__ import with_statement
+
 import Live
 import time
 import math
@@ -108,7 +108,7 @@ class RGB_LED(MonoButtonElement):
 			assert (value in range(128))
 			if (force or self._force_next_send or ((value != self._last_sent_value) and self._is_being_forwarded)):
 				data_byte1 = self._original_identifier
-				if value in range(1, 127):
+				if value in list(range(1, 127)):
 					data_byte2 = self._color_map[(value - 1) % (self._num_colors)]
 				elif value == 127:
 					data_byte2 = self._color_map[self._num_colors-1]
@@ -125,7 +125,7 @@ class RGB_LED(MonoButtonElement):
 
 
 	def flash(self, timer):
-		if (self._flash_state in range(1, self._num_flash_states) and (timer % self._flash_state) == 0):
+		if (self._flash_state in list(range(1, self._num_flash_states)) and (timer % self._flash_state) == 0):
 			data_byte2 = self._color * int((timer % (self._flash_state * 2)) > 0)
 			status_byte = self._original_channel
 			self.send_RGB(data_byte2)
