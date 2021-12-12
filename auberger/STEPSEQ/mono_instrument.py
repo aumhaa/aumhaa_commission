@@ -2,7 +2,7 @@
 # written against Live 10.0.5 on 102318
 
 import Live
-from itertools import imap, chain, starmap, ifilter
+from itertools import chain, starmap
 from functools import partial
 from ableton.v2.control_surface import Component, ClipCreator, Layer
 from ableton.v2.control_surface.components import SessionRingComponent, SessionComponent, ViewControlComponent, PlayableComponent, DrumGroupComponent
@@ -182,19 +182,19 @@ class SpecialPlayheadComponent(PlayheadComponent):
 		super(SpecialPlayheadComponent, self).set_clip(clip)
 		self._on_playing_position_changed.subject = clip
 
-	@listens(u'page')
+	@listens('page')
 	def _on_page_changed(self):
 		# debug('*******************Playhead._on_page_changed()', self._follower.page_offset, self._follower._paginator.page_index)
 		self.update()
 
-	@listens(u'playhead_page_index')
+	@listens('playhead_page_index')
 	def _on_follower_page_index_changed(self, value):
 		# debug('*******************Playhead._on_follower_page_index_changed()', value)
 		steps = self._parent._note_editor._get_step_count()
 		# debug('             Playhead._parent._note_editor._get_step_count():', steps)
 
 
-	@listens(u'playing_position')
+	@listens('playing_position')
 	def _on_playing_position_changed(self):
 		if self.is_enabled():
 			position = self._clip.playing_position
@@ -258,8 +258,8 @@ class MonoNoteEditorComponent(NoteEditorComponent):
 
 	"""Custom function for displaying triplets for different grid sizes, called by _visible steps"""
 	# _visible_steps_model = lambda self, indices: filter(lambda k: k % 4 != 3, indices)
-	_visible_steps_model = lambda self, indices: filter(lambda k: (k % 16) < 12, indices)
-	matrix = control_matrix(PadControl, channel=15, sensitivity_profile=u'loop', mode=PlayableControl.Mode.listenable)
+	_visible_steps_model = lambda self, indices: [k for k in indices if (k % 16) < 12]
+	matrix = control_matrix(PadControl, channel=15, sensitivity_profile='loop', mode=PlayableControl.Mode.listenable)
 
 	@matrix.pressed
 	def matrix(self, button):
@@ -278,9 +278,9 @@ class MonoNoteEditorComponent(NoteEditorComponent):
 		first_time = self.page_length * self._page_index
 		steps_per_page = self._get_step_count()
 		step_length = self._get_step_length()
-		indices = range(steps_per_page)
+		indices = list(range(steps_per_page))
 		if is_triplet_quantization(self._triplet_factor):
-			indices = filter(lambda k: k % 16 not in (12, 13, 14, 15), indices)
+			indices = [k for k in indices if k % 16 not in (12, 13, 14, 15)]
 		return [ (self._time_step(first_time + k * step_length), index) for k, index in enumerate(indices) ]
 
 
@@ -310,7 +310,7 @@ class ScaleSessionComponent(SessionComponent):
 					slot.set_launch_button(button)
 			#self._session_ring.update_highlight(ring.tracks_to_use(), ring.song.return_tracks)
 		else:
-			for x, y in product(xrange(self._session_ring.num_tracks), xrange(self._session_ring.num_scenes)):
+			for x, y in product(range(self._session_ring.num_tracks), range(self._session_ring.num_scenes)):
 				scene = self.scene(y)
 				slot = scene.clip_slot(x)
 				slot.set_launch_button(None)
@@ -349,11 +349,11 @@ class MonoScaleComponent(Component):
 		self._grid_resolution = grid_resolution
 
 		#self._vertical_offset_component = self.register_component(self._offset_settings_component_class(name = 'VerticalOffset', attribute_tag = 'vert_offset', parent_task_group = parent_task_group, value_dict = range(24), default_value_index = self._settings['DefaultVertOffset'], default_channel = 0, on_color = 'MonoInstrument.VerticalOffsetOnValue', off_color = 'MonoInstrument.VerticalOffsetOffValue'))
-		self._vertical_offset_component = self._offset_settings_component_class(parent = self, name = 'VerticalOffset', attribute_tag = 'vert_offset', parent_task_group = parent_task_group, value_dict = range(24), default_value_index = self._settings['DefaultVertOffset'], default_channel = 0, on_color = 'MonoInstrument.VerticalOffsetOnValue', off_color = 'MonoInstrument.VerticalOffsetOffValue')
+		self._vertical_offset_component = self._offset_settings_component_class(parent = self, name = 'VerticalOffset', attribute_tag = 'vert_offset', parent_task_group = parent_task_group, value_dict = list(range(24)), default_value_index = self._settings['DefaultVertOffset'], default_channel = 0, on_color = 'MonoInstrument.VerticalOffsetOnValue', off_color = 'MonoInstrument.VerticalOffsetOffValue')
 		self._vertical_offset_value.subject = self._vertical_offset_component
 
 		#self._offset_component = self.register_component(self._offset_settings_component_class(name = 'NoteOffset', attribute_tag = 'drum_offset', parent_task_group = parent_task_group, value_dict = range(112), default_value_index = self._settings['DefaultOffset'], default_channel = 0, bank_increment = 12, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue'))
-		self._offset_component = self._offset_settings_component_class(parent = self, name = 'NoteOffset', attribute_tag = 'drum_offset', parent_task_group = parent_task_group, value_dict = range(112), default_value_index = self._settings['DefaultOffset'], default_channel = 0, bank_increment = 12, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue')
+		self._offset_component = self._offset_settings_component_class(parent = self, name = 'NoteOffset', attribute_tag = 'drum_offset', parent_task_group = parent_task_group, value_dict = list(range(112)), default_value_index = self._settings['DefaultOffset'], default_channel = 0, bank_increment = 12, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue')
 		self._offset_value.subject = self._offset_component
 		self.set_offset_shift_toggle = self._offset_component.shift_toggle.set_control_element
 
@@ -368,7 +368,7 @@ class MonoScaleComponent(Component):
 		#self._note_sequencer._playhead_component._notes=tuple(range(32))
 		#self._note_sequencer._playhead_component._triplet_notes=tuple(range(28))
 		#self._note_sequencer._playhead_component._feedback_channels = [15]
-		self._note_sequencer._note_editor._visible_steps_model = lambda indices: filter(lambda k: k % 16 not in (13, 14, 15, 16), indices)
+		self._note_sequencer._note_editor._visible_steps_model = lambda indices: [k for k in indices if k % 16 not in (13, 14, 15, 16)]
 		self.set_playhead = self._note_sequencer.set_playhead
 		self.set_loop_selector_matrix = self._note_sequencer.set_loop_selector_matrix
 		self.set_quantization_buttons = self._note_sequencer.set_quantization_buttons
@@ -414,7 +414,7 @@ class MonoDrumpadComponent(Component):
 		self._grid_resolution = grid_resolution
 
 		#self._drum_offset_component = self.register_component(self._offset_settings_component_class(attribute_tag = 'drum_offset', name = 'DrumPadOffset', parent_task_group = parent_task_group, value_dict = range(28), default_value_index = self._settings['DefaultDrumOffset'], default_channel = 0, bank_increment = 4, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue'))
-		self._drum_offset_component = self._offset_settings_component_class(parent = self, attribute_tag = 'drum_offset', name = 'DrumPadOffset', parent_task_group = parent_task_group, value_dict = range(28), default_value_index = self._settings['DefaultDrumOffset'], default_channel = 0, bank_increment = 4, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue')
+		self._drum_offset_component = self._offset_settings_component_class(parent = self, attribute_tag = 'drum_offset', name = 'DrumPadOffset', parent_task_group = parent_task_group, value_dict = list(range(28)), default_value_index = self._settings['DefaultDrumOffset'], default_channel = 0, bank_increment = 4, on_color = 'MonoInstrument.OffsetOnValue', off_color = 'MonoInstrument.OffsetOffValue')
 		self._drum_offset_value.subject = self._drum_offset_component
 		self.set_offset_shift_toggle = self._drum_offset_component.shift_toggle.set_control_element
 

@@ -18,14 +18,19 @@ CHANNEL = 0
 ENCODER_CHANNEL = 2
 BUTTON_CHANNEL = 1
 PAD_CHANNEL = 0
-STEPSEQ_PADS = range(128)
-STEPSEQ_BUTTONS = range(8)
-STEPSEQ_ENCODERS = range(4)
-STEPSEQ_ENCODER_BUTTONS = range(4)
+MIXER_SESSION_CHANNEL = 3
 
-COLOR_MAP = [1, 2, 3, 4, 5, 6, 6]
+STEPSEQ_PADS = list(range(128))
+STEPSEQ_BUTTONS = list(range(8))
+STEPSEQ_ENCODERS = list(range(4))
+STEPSEQ_ENCODER_BUTTONS = list(range(4))
+STEPSEQ_SESSION_BUTTONS = list(range(34))
+STEPSEQ_MIXER_BUTTONS = list(range(34,42))
+STEPSEQ_MIXER_SLIDERS = list(range(8))
 
-NOTEBANKS = [range(32), range(32,64), range(64,96), range(96,128)]
+COLOR_MAP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
+NOTEBANKS = [list(range(32)), list(range(32,64)), list(range(64,96)), list(range(96,128))]
 TRIPLET_NOTEBANKS = [[0,1,2,3,4,5,6,7,8,9,10,11,12,16,17,18,19,20,21,22,23,24,25,26,27],
 			[32,33,34,35,36,37,38,39,40,41,42,43,48,49,50,51,52,53,54,55,56,57,58,59],
 			[64,65,66,67,68,69,70,71,72,73,74,75,80,81,82,83,84,85,86,87,88,89,90,91],
@@ -43,6 +48,25 @@ TRIPLET_NOTEBANKS = [[0,1,2,3,4,5,6,7,8,9,10,11,12,16,17,18,19,20,21,22,23,24,25
 """
 LENGTH_VALUES = [2, 3, 4]
 
+class SSRGB:
+
+	OFF = MonoColor(0)
+	white = MonoColor(1)
+	yellow = MonoColor(2)
+	cyan = MonoColor(3)
+	magenta = MonoColor(4)
+	red = MonoColor(5)
+	green = MonoColor(6)
+	blue = MonoColor(7)
+	WHITE = MonoColor(8)
+	YELLOW = MonoColor(9)
+	CYAN = MonoColor(10)
+	MAGENTA = MonoColor(11)
+	RED = MonoColor(12)
+	GREEN = MonoColor(13)
+	BLUE = MonoColor(14)
+
+
 class STEPSEQColors:
 
 
@@ -51,6 +75,22 @@ class STEPSEQColors:
 		Off = LividRGB.OFF
 		Disabled = LividRGB.OFF
 		Alert = LividRGB.BlinkFast.WHITE
+
+
+	class SequenceSelector:
+		Selected = LividRGB.WHITE
+		Unselected = LividRGB.OFF
+
+
+	class SequenceColors:
+		Sequence0 = SSRGB.YELLOW
+		Sequence1 = SSRGB.CYAN
+		Sequence2 = SSRGB.MAGENTA
+		Sequence3 = SSRGB.RED
+		Sequence4 = SSRGB.GREEN
+		Sequence5 = SSRGB.BLUE
+		Sequence6 = SSRGB.YELLOW
+		Sequence7 = SSRGB.CYAN
 
 
 	class MainModes:
@@ -82,11 +122,228 @@ class STEPSEQColors:
 		Empty = LividRGB.OFF
 
 
+	class NoteEditor0:
+
+		class Step:
+			Low = SSRGB.YELLOW
+			High = SSRGB.YELLOW
+			Full = SSRGB.YELLOW
+			Muted = SSRGB.YELLOW
+			StepEmpty = SSRGB.yellow
+
+
+		class StepEditing:
+			High = SSRGB.YELLOW
+			Low = SSRGB.YELLOW
+			Full = SSRGB.YELLOW
+			Muted = SSRGB.YELLOW
+
+
+		StepEmpty = SSRGB.yellow
+		StepEmptyBase = SSRGB.yellow
+		StepEmptyScale = SSRGB.yellow
+		StepDisabled = SSRGB.yellow
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+
+	class NoteEditor1:
+
+		class Step:
+			Low = SSRGB.CYAN
+			High = SSRGB.CYAN
+			Full = SSRGB.CYAN
+			Muted = SSRGB.CYAN
+			StepEmpty = SSRGB.cyan
+
+
+		class StepEditing:
+			High = SSRGB.CYAN
+			Low = SSRGB.CYAN
+			Full = SSRGB.CYAN
+			Muted = SSRGB.CYAN
+
+
+		StepEmpty = SSRGB.cyan
+		StepEmptyBase = SSRGB.cyan
+		StepEmptyScale = SSRGB.cyan
+		StepDisabled = SSRGB.cyan
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor2:
+
+		class Step:
+			Low = SSRGB.MAGENTA
+			High = SSRGB.MAGENTA
+			Full = SSRGB.MAGENTA
+			Muted = SSRGB.MAGENTA
+			StepEmpty = SSRGB.magenta
+
+
+		class StepEditing:
+			High = SSRGB.MAGENTA
+			Low = SSRGB.MAGENTA
+			Full = SSRGB.MAGENTA
+			Muted = SSRGB.MAGENTA
+
+
+		StepEmpty = SSRGB.magenta
+		StepEmptyBase = SSRGB.magenta
+		StepEmptyScale = SSRGB.magenta
+		StepDisabled = SSRGB.magenta
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor3:
+
+		class Step:
+			Low = SSRGB.GREEN
+			High = SSRGB.GREEN
+			Full = SSRGB.GREEN
+			Muted = SSRGB.GREEN
+			StepEmpty = SSRGB.green
+
+
+		class StepEditing:
+			High = SSRGB.GREEN
+			Low = SSRGB.GREEN
+			Full = SSRGB.GREEN
+			Muted = SSRGB.GREEN
+
+
+		StepEmpty = SSRGB.green
+		StepEmptyBase = SSRGB.green
+		StepEmptyScale = SSRGB.green
+		StepDisabled = SSRGB.green
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor4:
+
+		class Step:
+			Low = SSRGB.RED
+			High = SSRGB.RED
+			Full = SSRGB.RED
+			Muted = SSRGB.RED
+			StepEmpty = SSRGB.red
+
+
+		class StepEditing:
+			High = SSRGB.RED
+			Low = SSRGB.RED
+			Full = SSRGB.RED
+			Muted = SSRGB.RED
+
+
+		StepEmpty = SSRGB.red
+		StepEmptyBase = SSRGB.red
+		StepEmptyScale = SSRGB.red
+		StepDisabled = SSRGB.red
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor5:
+
+		class Step:
+			Low = SSRGB.BLUE
+			High = SSRGB.BLUE
+			Full = SSRGB.BLUE
+			Muted = SSRGB.BLUE
+			StepEmpty = SSRGB.blue
+
+
+		class StepEditing:
+			High = SSRGB.BLUE
+			Low = SSRGB.BLUE
+			Full = SSRGB.BLUE
+			Muted = SSRGB.BLUE
+
+
+		StepEmpty = SSRGB.blue
+		StepEmptyBase = SSRGB.blue
+		StepEmptyScale = SSRGB.blue
+		StepDisabled = SSRGB.blue
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor6:
+
+		class Step:
+			Low = SSRGB.YELLOW
+			High = SSRGB.YELLOW
+			Full = SSRGB.YELLOW
+			Muted = SSRGB.YELLOW
+			StepEmpty = SSRGB.yellow
+
+
+		class StepEditing:
+			High = SSRGB.YELLOW
+			Low = SSRGB.YELLOW
+			Full = SSRGB.YELLOW
+			Muted = SSRGB.YELLOW
+
+
+		StepEmpty = SSRGB.yellow
+		StepEmptyBase = SSRGB.yellow
+		StepEmptyScale = SSRGB.yellow
+		StepDisabled = SSRGB.yellow
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
+	class NoteEditor7:
+
+		class Step:
+			Low = SSRGB.CYAN
+			High = SSRGB.CYAN
+			Full = SSRGB.CYAN
+			Muted = SSRGB.CYAN
+			StepEmpty = SSRGB.cyan
+
+
+		class StepEditing:
+			High = SSRGB.CYAN
+			Low = SSRGB.CYAN
+			Full = SSRGB.CYAN
+			Muted = SSRGB.CYAN
+
+
+		StepEmpty = SSRGB.cyan
+		StepEmptyBase = SSRGB.cyan
+		StepEmptyScale = SSRGB.cyan
+		StepDisabled = SSRGB.cyan
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
+		StepSelected = SSRGB.GREEN
+		QuantizationSelected = LividRGB.RED
+		QuantizationUnselected = LividRGB.OFF
+
 	class NoteEditor:
 
 		class Step:
 			Low = LividRGB.CYAN
-			High = LividRGB.WHITE
+			High = LividRGB.BLUE
 			Full = LividRGB.YELLOW
 			Muted = LividRGB.YELLOW
 			StepEmpty = LividRGB.OFF
@@ -103,20 +360,19 @@ class STEPSEQColors:
 		StepEmptyBase = LividRGB.OFF
 		StepEmptyScale = LividRGB.OFF
 		StepDisabled = LividRGB.OFF
-		Playhead = Color(5)
-		PlayheadRecord = Color(6)
+		Playhead = SSRGB.WHITE
+		PlayheadRecord = SSRGB.RED
 		StepSelected = LividRGB.GREEN
 		QuantizationSelected = LividRGB.RED
 		QuantizationUnselected = LividRGB.OFF
 
-
 	class LoopSelector:
-		Playhead = LividRGB.GREEN
+		Playhead = SSRGB.WHITE
 		OutsideLoop = LividRGB.WHITE
 		InsideLoopStartBar = LividRGB.CYAN
 		SelectedPage = LividRGB.MAGENTA
 		InsideLoop = LividRGB.BLUE
-		PlayheadRecord = LividRGB.RED
+		PlayheadRecord = SSRGB.RED
 
 
 	class DrumGroup:
