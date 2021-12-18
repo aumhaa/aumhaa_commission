@@ -621,6 +621,10 @@ class SpecialNoteEditorComponent(MonoNoteEditorComponent):
 	#     return color_for_note(most_significant_note(notes), velocity_range_thresholds=self._velocity_range_thresholds)
 
 	@property
+	def can_change_page(self):
+		return False
+
+	@property
 	def active_note_regions_with_fill(self):
 		return map(self._get_time_range_with_fill, chain(self._pressed_steps, self._modified_steps))
 
