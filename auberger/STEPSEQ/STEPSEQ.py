@@ -1234,7 +1234,7 @@ class SpecialLoopSelectorComponent(LoopSelectorComponent):
 			debug('original_end', original_end, 'new_length', new_length)
 			if new_length < original_end:
 				# clip.get_notes(0, 0, original_end, 128)
-				clip.remove_notes(new_length, 0, clip.length, 128)
+				clip.remove_notes_extended(new_length, 0, clip.length, 128)
 			else:
 				num_duplicates = math.floor(new_length/original_end)
 				for x in range(num_duplicates):
