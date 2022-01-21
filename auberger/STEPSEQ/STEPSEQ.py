@@ -1219,14 +1219,34 @@ class SpecialLoopSelectorComponent(LoopSelectorComponent):
 				# debug('button is:', None)
 				liveobj_valid(button) and self.loop_length_radio_buttons._on_checked(button)
 
-
 	@loop_length_radio_buttons.checked
 	def loop_length_radio_buttons(self, button):
 		debug('loop_length_radio_buttons:', button.index)
 		if liveobj_valid(self._sequencer_clip):
 			end_loop = min(32, int(abs(button.index-8)*4))
-			debug('end_loop:', end_loop)
+			# debug('end_loop:', end_loop)
+			self._duplicate_clip_contents(self._sequencer_clip, end_loop)
 			set_loop(self._sequencer_clip, self._loop_start, end_loop)
+
+	def _duplicate_clip_contents(self, clip, new_length):
+		if liveobj_valid(clip):
+			original_end = clip.loop_end
+			debug('original_end', original_end, 'new_length', new_length)
+			if new_length < original_end:
+				# clip.get_notes(0, 0, original_end, 128)
+				clip.remove_notes(new_length, 0, clip.length, 128)
+			else:
+				num_duplicates = math.floor(new_length/original_end)
+				for x in range(num_duplicates):
+					# clip.duplicate_loop()
+					# debug('duplicating:', 0, original_end, original_end*(x+1), -1, 0)
+					clip.duplicate_region(0, original_end, original_end*(x+1), -1, 0)
+					self._duplicate_automation(clip, 0, original_end, original_end*(x+1))
+
+	def _duplicate_automation(self, clip, origin_start, origin_end, destination_time):
+		pass
+
+
 
 	# def _update_page_and_playhead_leds(self):
 	# 	super(SpecialLoopSelectorComponent, self)._update_page_and_playhead_leds()
@@ -1253,12 +1273,13 @@ class SequenceSelectorComponent(Component):
 	selection_radio_buttons = new_control_list(CheckedRadioButtonControl, checked_color=u'SequenceSelector.Selected', unchecked_color=u'SequenceSelector.Unselected')
 	length_page_button = ButtonControl()
 
-	def __init__(self, matrix, sequencers, playheads, *a, **k):
+	def __init__(self, matrix, length_matrix, sequencers, playheads, *a, **k):
 		self._sequencers = sequencers
 		for index, sequencer in enumerate(sequencers):
 			key = u'NoteEditor'+str(index)
 			sequencer._note_editor._skin_base_key = key
 		self._pad_matrix = matrix
+		self._length_matrix = length_matrix
 		self._playheads = playheads
 		super(SequenceSelectorComponent, self).__init__(*a, **k)
 		self._active_sequencers = [0]
@@ -1282,9 +1303,10 @@ class SequenceSelectorComponent(Component):
 		for playhead in self._playheads:
 			playhead.set_buttons(None)
 		if self.length_page_button.is_pressed:
+			# debug('setting up length buttons')
 			index = 0
 			for sequencer in self._sequencers:
-				sequencer.layer = Layer(priority=5, loop_length_buttons=self._pad_matrix.submatrix[index,:])
+				sequencer.layer = Layer(priority=5, loop_length_buttons=self._length_matrix.submatrix[index,:])
 				index+=1
 		else:
 			active_sequencers = [self._sequencers[index] for index in sorted(self._active_sequencers)]
@@ -1294,7 +1316,7 @@ class SequenceSelectorComponent(Component):
 
 			for sequencer in self._sequencers:
 				if not sequencer in active_sequencers:
-					sequencer.layer = Layer(priority = 5)
+					sequencer.layer = Layer(priority=5)
 
 			for sequencer in active_sequencers:
 				length = int(int(sequencer._note_sequencer._loop_selector.loop_length)/4)
@@ -1408,8 +1430,18 @@ class STEPSEQ(ControlSurface):
 																								self._session_button[8:16],
 																								self._session_button[16:24],
 																								self._session_button[24:32]])
-		# self._select_multi = MultiElement(self._button[0], self._button[1], self._button[2], self._button[3], self._button[4], self._button[5], self._button[6], self._button[7],)
 
+		# self._select_multi = MultiElement(self._button[0], self._button[1], self._button[2], self._button[3], self._button[4], self._button[5], self._button[6], self._button[7],)
+		self._length_multis = [MultiElement(self._pad[index*2], self._pad[(index*2)+1]) for index in range(64)]
+		self._length_matrix = ButtonMatrixElement(name = 'LengthMatrix', rows = [self._length_multis[0:8],
+																			self._length_multis[8:16],
+																			self._length_multis[16:24],
+																			self._length_multis[24:32],
+																			self._length_multis[32:40],
+																			self._length_multis[40:48],
+																			self._length_multis[48:56],
+																			self._length_multis[56:64]])
+		# debug('length_multis:', self._length_multis[0].owned_control_elements())
 
 	def _setup_background(self):
 		self._background = BackgroundComponent(name = 'Background')
@@ -1467,7 +1499,7 @@ class STEPSEQ(ControlSurface):
 		for index in range(8):
 			self._playhead_elements[index] = SpecialPlayheadElement(playhead = Playhead())   #(self._c_instance.playhead)
 
-		self._sequence_selector = SequenceSelectorComponent(matrix = self._pad_matrix, sequencers = self._stepsequencers, playheads = self._playhead_elements)
+		self._sequence_selector = SequenceSelectorComponent(matrix = self._pad_matrix, length_matrix = self._length_matrix, sequencers = self._stepsequencers, playheads = self._playhead_elements)
 		self._sequence_selector.layer = Layer(selection_radio_buttons=self._select_button_matrix, length_page_button=self._encoder_button[3])
 
 
