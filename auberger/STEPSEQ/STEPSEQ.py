@@ -515,6 +515,39 @@ class SpecialDeviceComponent(DeviceComponent):
 
 
 
+class SelectedNotesProvider(EventObject):
+	_selected_notes = tuple([DEFAULT_START_NOTE])
+
+	@listenable_property
+	def selected_notes(self):
+		return self._selected_notes
+
+	@selected_notes.setter
+	def selected_notes(self, notes):
+		self._selected_notes = tuple(sorted(set(notes)))
+		self.notify_selected_notes(self._selected_notes)
+
+	def add_note(self, note):
+		self.selected_notes += (note,)
+
+	def remove_note(self, note):
+		if len(self._selected_notes) > 1 and note in self._selected_notes:
+			note_list = list(self._selected_notes)
+			note_list.remove(note)
+			self.selected_notes = note_list
+
+	def toggle_note(self, note):
+		if note in self.selected_notes:
+			self.remove_note(note)
+		else:
+			self.add_note(note)
+
+
+class InstrumentComponent(PlayableComponent):
+	selected_notes_provider = SelectedNotesProvider()
+
+
+
 DEFAULT_START_NOTE = 60
 
 #This is the main component that encompasses all subcomponents needed for each track sequencer.  It relies on the Channelstrip above.
@@ -535,7 +568,7 @@ class TrackStepSequencer(Component):
 		self._skin = skin
 		self._grid_resolution = grid_resolution
 
-		self._instrument = MonoKeyGroupComponent()
+		self._instrument = InstrumentComponent()
 
 		scale_clip_creator = ClipCreator()
 		scale_note_editor = SpecialNoteEditorComponent(clip_creator=scale_clip_creator, grid_resolution=grid_resolution)
@@ -584,7 +617,7 @@ class TrackStepSequencer(Component):
 
 
 
-class SpecialStepSeqComponent(MonoStepSeqComponent):
+class SpecialStepSeqComponent(StepSeqComponent):
 
 	def __init__(self, channel_strip, *a, **k):
 		super(SpecialStepSeqComponent, self).__init__(*a, **k)
@@ -1273,7 +1306,8 @@ class SequenceSelectorComponent(Component):
 	selection_radio_buttons = new_control_list(CheckedRadioButtonControl, checked_color=u'SequenceSelector.Selected', unchecked_color=u'SequenceSelector.Unselected')
 	length_page_button = ButtonControl()
 
-	def __init__(self, matrix, length_matrix, sequencers, playheads, *a, **k):
+	def __init__(self, script, matrix, length_matrix, sequencers, playheads, *a, **k):
+		self._script = script
 		self._sequencers = sequencers
 		for index, sequencer in enumerate(sequencers):
 			key = u'NoteEditor'+str(index)
@@ -1286,8 +1320,6 @@ class SequenceSelectorComponent(Component):
 		# self.selection_radio_buttons.checked_indexes = [0]
 		# self.build_sequencer_layers()
 
-
-
 	@selection_radio_buttons.checked
 	def selection_radio_buttons(self, state):
 		# debug('SequenceSelectorComponent.selection_radio_buttons.checked:', state)
@@ -1295,11 +1327,12 @@ class SequenceSelectorComponent(Component):
 
 	@selection_radio_buttons.checked_indexes
 	def selection_radio_buttons(self, state):
-		# debug('SequenceSelectorComponent.selection_radio_buttons.checked_indexes:', state.checked_indexes)
+		debug('SequenceSelectorComponent.selection_radio_buttons.checked_indexes:', state.checked_indexes)
 		self._active_sequencers = state.checked_indexes
 		self.build_sequencer_layers()
 
 	def build_sequencer_layers(self):
+		self._script._set_suppress_rebuild_requests(True)
 		for playhead in self._playheads:
 			playhead.set_buttons(None)
 		if self.length_page_button.is_pressed:
@@ -1332,6 +1365,9 @@ class SequenceSelectorComponent(Component):
 					playhead_index+=1
 				else:
 					break
+		self._script._set_suppress_rebuild_requests(False)
+		self._script.request_rebuild_midi_map()
+			# pass
 
 	@listens_group('loop_length')
 	def _on_seq_length_changed(self, *a, **k):
@@ -1460,18 +1496,18 @@ class STEPSEQ(ControlSurface):
 		self._session_ring = SpecialSessionRingComponent(name = 'Session_Ring', num_tracks = 8, num_scenes = 4, tracks_to_use=partial(tracks_to_use_from_song, self.song))
 		# self._session_ring.tracks_to_use = lambda : tracks_to_use
 		self._mixer = SpecialMonoMixerComponent(name = 'Mixer', num_returns = 4, tracks_provider = self._session_ring, track_assigner = SimpleTrackAssigner(), invert_mute_feedback = True, auto_name = True, enable_skinning = True, channel_strip_component_type=SpecialMonoChannelStripComponent)
-		self._mixer.layer = Layer(priority = 5, volume_controls = self._mixer_slider_matrix, arm_buttons = self._mixer_button_matrix)
+		# self._mixer.layer = Layer(priority = 5, volume_controls = self._mixer_slider_matrix, arm_buttons = self._mixer_button_matrix)
 		# self._mixer.layer = Layer(priority = 5, track_select_buttons = self._select_button_matrix)
 		self._mixer.set_enabled(False)
 
 
 	def _setup_session_control(self):
 		self._session = SessionComponent(session_ring = self._session_ring, auto_name = True)
-		self._session.layer = Layer(priority = 5, clip_launch_buttons = self._session_button_matrix)
+		# self._session.layer = Layer(priority = 5, clip_launch_buttons = self._session_button_matrix)
 		self._session.set_enabled(False)
 
 		self._session_navigation = SessionNavigationComponent(session_ring = self._session_ring)
-		self._session_navigation.layer = Layer(priority = 5, up_button = self._session_button[32], down_button = self._session_button[33])
+		# self._session_navigation.layer = Layer(priority = 5, up_button = self._session_button[32], down_button = self._session_button[33])
 		self._session.set_enabled(False)
 
 
@@ -1499,7 +1535,7 @@ class STEPSEQ(ControlSurface):
 		for index in range(8):
 			self._playhead_elements[index] = SpecialPlayheadElement(playhead = Playhead())   #(self._c_instance.playhead)
 
-		self._sequence_selector = SequenceSelectorComponent(matrix = self._pad_matrix, length_matrix = self._length_matrix, sequencers = self._stepsequencers, playheads = self._playhead_elements)
+		self._sequence_selector = SequenceSelectorComponent(script = self, matrix = self._pad_matrix, length_matrix = self._length_matrix, sequencers = self._stepsequencers, playheads = self._playhead_elements)
 		self._sequence_selector.layer = Layer(selection_radio_buttons=self._select_button_matrix, length_page_button=self._encoder_button[3])
 
 
@@ -1507,12 +1543,13 @@ class STEPSEQ(ControlSurface):
 		self._main_modes = ModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', [self._background])
 		# self._main_modes.add_mode('Main', [self._mixer, self._device, self._instrument, self._stepsequencer])
-		self._main_modes.add_mode('Main', [self._background, self._mixer, self._session, self._session_navigation, self._stepsequencers, self._sequence_selector])
+		# self._main_modes.add_mode('Main', [self._background, self._mixer, self._session, self._session_navigation, self._stepsequencers, self._sequence_selector])
+		self._main_modes.add_mode('Main', [self._background, self._stepsequencers, self._sequence_selector])
 		# self._main_modes.add_mode('Select', [self._device, self._instrument, tuple([self._send_instrument_shifted, self._send_instrument_unshifted])], behaviour = DelayedExcludingMomentaryBehaviour(excluded_groups = ['shifted']) )
 		self._main_modes.selected_mode = 'disabled'
 		# self._main_modes.layer = Layer(priority = 5, Select_button=self._select_multi)
 		self._main_modes.set_enabled(True)
-		debug('checked_indexes', self._sequence_selector.selection_radio_buttons.checked_indexes)
+		# debug('checked_indexes', self._sequence_selector.selection_radio_buttons.checked_indexes)
 
 
 	"""general functionality"""
